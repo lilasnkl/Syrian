@@ -1,0 +1,69 @@
+2026-03-22 21:15:42.679 +03 [7960] LOG:  starting PostgreSQL 18.1 on x86_64-windows, compiled by msvc-19.44.35219, 64-bit
+2026-03-22 21:15:42.690 +03 [7960] LOG:  listening on IPv6 address "::1", port 55432
+2026-03-22 21:15:42.691 +03 [7960] LOG:  listening on IPv4 address "127.0.0.1", port 55432
+2026-03-22 21:15:42.806 +03 [19440] LOG:  database system was shut down at 2026-03-22 21:15:12 +03
+2026-03-22 21:15:42.830 +03 [7960] LOG:  database system is ready to accept connections
+2026-03-22 21:16:07.813 +03 [8300] ERROR:  syntax error at or near "BEGIN" at character 5
+2026-03-22 21:16:07.813 +03 [8300] STATEMENT:  DO  BEGIN IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname='syrian_services_user') THEN CREATE ROLE syrian_services_user LOGIN PASSWORD 'syrian_services_dev'; ELSE ALTER ROLE syrian_services_user WITH LOGIN PASSWORD 'syrian_services_dev'; END IF; END ;
+2026-03-22 21:16:19.154 +03 [7032] ERROR:  syntax error at or near "\" at character 144
+2026-03-22 21:16:19.154 +03 [7032] STATEMENT:  SELECT 'CREATE DATABASE syrian_services OWNER syrian_services_user' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname='syrian_services') \gexec
+2026-03-22 21:16:32.911 +03 [16788] ERROR:  database "syrian_services" does not exist
+2026-03-22 21:16:32.911 +03 [16788] STATEMENT:  GRANT ALL PRIVILEGES ON DATABASE syrian_services TO syrian_services_user;
+2026-03-22 21:20:42.805 +03 [24416] LOG:  checkpoint starting: time
+2026-03-22 21:22:32.729 +03 [24416] LOG:  checkpoint complete: wrote 1026 buffers (6.3%), wrote 3 SLRU buffers; 1 WAL file(s) added, 0 removed, 0 recycled; write=109.499 s, sync=0.255 s, total=109.925 s; sync files=319, longest=0.015 s, average=0.001 s; distance=4901 kB, estimate=4901 kB; lsn=0/1CBAD50, redo lsn=0/1CBACC0
+2026-03-22 21:25:42.790 +03 [24416] LOG:  checkpoint starting: time
+2026-03-22 21:26:10.429 +03 [24416] LOG:  checkpoint complete: wrote 259 buffers (1.6%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=27.387 s, sync=0.230 s, total=27.639 s; sync files=270, longest=0.016 s, average=0.001 s; distance=1952 kB, estimate=4606 kB; lsn=0/1EA2E90, redo lsn=0/1EA2E00
+2026-03-22 21:29:46.549 +03 [26848] ERROR:  permission denied to create database
+2026-03-22 21:29:46.549 +03 [26848] STATEMENT:  CREATE DATABASE "test_syrian_services" 
+2026-03-22 21:29:47.672 +03 [21332] ERROR:  permission denied to create database
+2026-03-22 21:29:47.672 +03 [21332] STATEMENT:  CREATE DATABASE "test_syrian_services" 
+2026-03-22 21:29:47.900 +03 [2876] ERROR:  permission denied to create database
+2026-03-22 21:29:47.900 +03 [2876] STATEMENT:  CREATE DATABASE "test_syrian_services" 
+2026-03-22 21:29:48.087 +03 [6560] ERROR:  permission denied to create database
+2026-03-22 21:29:48.087 +03 [6560] STATEMENT:  CREATE DATABASE "test_syrian_services" 
+2026-03-22 21:29:48.275 +03 [26700] ERROR:  permission denied to create database
+2026-03-22 21:29:48.275 +03 [26700] STATEMENT:  CREATE DATABASE "test_syrian_services" 
+2026-03-22 21:29:48.457 +03 [17988] ERROR:  permission denied to create database
+2026-03-22 21:29:48.457 +03 [17988] STATEMENT:  CREATE DATABASE "test_syrian_services" 
+2026-03-22 21:29:48.740 +03 [21904] ERROR:  permission denied to create database
+2026-03-22 21:29:48.740 +03 [21904] STATEMENT:  CREATE DATABASE "test_syrian_services" 
+2026-03-22 21:29:48.921 +03 [23832] ERROR:  permission denied to create database
+2026-03-22 21:29:48.921 +03 [23832] STATEMENT:  CREATE DATABASE "test_syrian_services" 
+2026-03-22 21:29:49.097 +03 [9400] ERROR:  permission denied to create database
+2026-03-22 21:29:49.097 +03 [9400] STATEMENT:  CREATE DATABASE "test_syrian_services" 
+2026-03-22 21:29:49.260 +03 [21196] ERROR:  permission denied to create database
+2026-03-22 21:29:49.260 +03 [21196] STATEMENT:  CREATE DATABASE "test_syrian_services" 
+2026-03-22 21:29:49.453 +03 [8392] ERROR:  permission denied to create database
+2026-03-22 21:29:49.453 +03 [8392] STATEMENT:  CREATE DATABASE "test_syrian_services" 
+2026-03-22 21:29:49.641 +03 [13548] ERROR:  permission denied to create database
+2026-03-22 21:29:49.641 +03 [13548] STATEMENT:  CREATE DATABASE "test_syrian_services" 
+2026-03-22 21:29:49.843 +03 [16084] ERROR:  permission denied to create database
+2026-03-22 21:29:49.843 +03 [16084] STATEMENT:  CREATE DATABASE "test_syrian_services" 
+2026-03-22 21:29:50.039 +03 [1964] ERROR:  permission denied to create database
+2026-03-22 21:29:50.039 +03 [1964] STATEMENT:  CREATE DATABASE "test_syrian_services" 
+2026-03-22 21:29:50.228 +03 [25608] ERROR:  permission denied to create database
+2026-03-22 21:29:50.228 +03 [25608] STATEMENT:  CREATE DATABASE "test_syrian_services" 
+2026-03-22 21:29:50.509 +03 [22784] ERROR:  permission denied to create database
+2026-03-22 21:29:50.509 +03 [22784] STATEMENT:  CREATE DATABASE "test_syrian_services" 
+2026-03-22 21:29:50.686 +03 [5296] ERROR:  permission denied to create database
+2026-03-22 21:29:50.686 +03 [5296] STATEMENT:  CREATE DATABASE "test_syrian_services" 
+2026-03-22 21:29:50.916 +03 [23780] ERROR:  permission denied to create database
+2026-03-22 21:29:50.916 +03 [23780] STATEMENT:  CREATE DATABASE "test_syrian_services" 
+2026-03-22 21:30:42.440 +03 [24416] LOG:  checkpoint starting: time
+2026-03-22 21:30:57.230 +03 [24416] LOG:  checkpoint complete: wrote 222 buffers (1.4%), wrote 4 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=14.684 s, sync=0.072 s, total=14.790 s; sync files=56, longest=0.010 s, average=0.002 s; distance=6185 kB, estimate=6185 kB; lsn=0/24B9200, redo lsn=0/24AD550
+2026-03-22 21:30:57.238 +03 [24416] LOG:  checkpoint starting: immediate force wait
+2026-03-22 21:30:57.274 +03 [24416] LOG:  checkpoint complete: wrote 1 buffers (0.0%), wrote 2 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.006 s, sync=0.003 s, total=0.037 s; sync files=2, longest=0.002 s, average=0.002 s; distance=47 kB, estimate=5571 kB; lsn=0/24B92D0, redo lsn=0/24B9278
+2026-03-22 21:35:57.291 +03 [24416] LOG:  checkpoint starting: time
+2026-03-22 21:35:58.968 +03 [24416] LOG:  checkpoint complete: wrote 15 buffers (0.1%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=1.649 s, sync=0.011 s, total=1.677 s; sync files=10, longest=0.002 s, average=0.002 s; distance=79 kB, estimate=5022 kB; lsn=0/24CCF70, redo lsn=0/24CCF18
+2026-03-22 22:00:58.018 +03 [24416] LOG:  checkpoint starting: time
+2026-03-22 22:00:58.728 +03 [24416] LOG:  checkpoint complete: wrote 6 buffers (0.0%), wrote 4 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.678 s, sync=0.013 s, total=0.727 s; sync files=9, longest=0.002 s, average=0.002 s; distance=15 kB, estimate=4522 kB; lsn=0/24D0EE0, redo lsn=0/24D0E88
+2026-03-22 22:03:23.282 +03 [10468] LOG:  could not receive data from client: An existing connection was forcibly closed by the remote host.
+	
+2026-03-23 01:05:17.235 +03 [7960] LOG:  autovacuum worker (PID 24172) was terminated by exception 0xC000026B
+2026-03-23 01:05:17.235 +03 [7960] HINT:  See C include file "ntstatus.h" for a description of the hexadecimal value.
+2026-03-23 01:05:17.236 +03 [7960] LOG:  terminating any other active server processes
+2026-03-23 01:05:17.704 +03 [7960] LOG:  all server processes terminated; reinitializing
+2026-03-23 01:05:18.376 +03 [7960] LOG:  startup process (PID 23980) was terminated by exception 0xC000026B
+2026-03-23 01:05:18.376 +03 [7960] HINT:  See C include file "ntstatus.h" for a description of the hexadecimal value.
+2026-03-23 01:05:18.377 +03 [7960] LOG:  aborting startup due to startup process failure
+2026-03-23 01:05:18.437 +03 [7960] LOG:  database system is shut down
