@@ -222,6 +222,44 @@ class RecommendProvidersApiTests(APITestCase):
 
     @patch(
         "apps.providers.services.recommendation_service.ProblemAnalysisService._generate_analysis",
+        return_value=(
+            "{"
+            '"service_category": "", '
+            '"provider_type": "", '
+            '"likely_issue": "The bedroom AC may have an airflow restriction or an electrical shutdown issue.", '
+            '"urgency": "", '
+            '"keywords": "bedroom AC، not cooling", '
+            '"suggested_solution": "Arrange a technician inspection and avoid forcing repeated restarts until the unit is checked.", '
+            '"quick_tips": ["Turn the unit off for a few minutes before restarting", "Check whether the filter is visibly dusty or blocked"]'
+            "}"
+        ),
+    )
+    def test_recommend_providers_handles_noisy_free_form_messages_when_model_omits_enums(self, _mock_analysis):
+        response = self.client.post(
+            self.endpoint,
+            {
+                "problem_description": "Hi team, can you help please? The AC in my bedroom is not cooling and it shuts off after a few minutes. Thanks.",
+                "user_lat": None,
+                "user_lng": None,
+                "budget": None,
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        body = response.json()
+
+        self.assertEqual(body["analysis"]["service_category"], "air_conditioning")
+        self.assertEqual(body["analysis"]["provider_type"], "ac_technician")
+        self.assertEqual(body["analysis"]["urgency"], "medium")
+        self.assertEqual(body["analysis"]["keywords"], ["bedroom ac", "not cooling"])
+
+        provider_names = [provider["name"] for provider in body["top_providers"]]
+        self.assertEqual(len(provider_names), 3)
+        self.assertNotIn("Trusted Plumber", provider_names)
+
+    @patch(
+        "apps.providers.services.recommendation_service.ProblemAnalysisService._generate_analysis",
         side_effect=[
             (
                 "{"

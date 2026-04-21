@@ -20,6 +20,220 @@ from shared.exceptions import ExternalServiceError
 logger = logging.getLogger(__name__)
 
 
+class ProblemAnalysisPromptBuilder:
+    @staticmethod
+    def build_system_prompt() -> str:
+        return (
+            "You are a service-triage assistant for a professional home-services marketplace. "
+            "Return valid JSON only. Do not include markdown, code fences, comments, or explanatory text. "
+            "Use exactly this schema: "
+            '{"service_category":"","provider_type":"","likely_issue":"","urgency":"","keywords":[],"suggested_solution":"","quick_tips":[]}. '
+            "Every key must always be present."
+        )
+
+    @staticmethod
+    def _language_instruction(language: str) -> str:
+        return "Arabic" if language == "ar" else "English"
+
+    @staticmethod
+    def _retry_instruction(attempt_number: int) -> str:
+        if attempt_number <= 1:
+            return ""
+        return (
+            "The previous response was invalid or incomplete. "
+            "Return every schema key with valid JSON only and do not omit fields."
+        )
+
+    @classmethod
+    def build_user_prompt(cls, problem_description: str, *, language: str, attempt_number: int) -> str:
+        normalized_message = re.sub(r"\s+", " ", (problem_description or "")).strip()
+        instructions = [
+            "Analyze the following raw customer message and convert it into a structured service recommendation.",
+            "The message may contain greetings, filler text, typos, short fragments, mixed Arabic and English, or irrelevant context.",
+            "Ignore conversational noise and extract the single strongest service need from the full message.",
+            "If the message mentions more than one issue, prioritize the most urgent or safety-critical issue.",
+            "service_category, provider_type, and urgency must always be lowercase English identifiers only.",
+            "Allowed service_category values: plumbing, electrical, cleaning, painting, landscaping, moving, carpentry, air_conditioning.",
+            "Allowed provider_type values: plumber, electrician, cleaner, painter, landscaper, mover, carpenter, ac_technician.",
+            "Allowed urgency values: low, medium, high.",
+            "If category or provider type is implied but not written directly, infer the best supported match from the message.",
+            "Example Arabic mapping: 'عندي تسريب ماء تحت المغسلة' -> service_category='plumbing', provider_type='plumber', urgency='medium'.",
+            f"Write likely_issue, suggested_solution, and quick_tips in {cls._language_instruction(language)}.",
+            "suggested_solution must be one short professional next step.",
+            "quick_tips must contain 2 to 5 short, safe, practical actions the customer can try before booking a provider.",
+            "keywords must contain short search terms that reflect the service need.",
+        ]
+        retry_instruction = cls._retry_instruction(attempt_number)
+        if retry_instruction:
+            instructions.append(retry_instruction)
+        instructions.extend([
+            "Customer message:",
+            normalized_message,
+        ])
+        return "\n".join(instructions)
+
+    @classmethod
+    def build_payload(cls, problem_description: str, *, language: str, attempt_number: int) -> dict[str, Any]:
+        return {
+            "model": getattr(settings, "OLLAMA_MODEL", "qwen2.5:3b"),
+            "stream": False,
+            "format": "json",
+            "system": cls.build_system_prompt(),
+            "prompt": cls.build_user_prompt(
+                problem_description,
+                language=language,
+                attempt_number=attempt_number,
+            ),
+            "options": {
+                "temperature": 0.1,
+            },
+        }
+
+
+class OllamaAnalysisClient:
+    @classmethod
+    def generate(cls, problem_description: str, *, language: str, attempt_number: int = 1) -> str:
+        payload = ProblemAnalysisPromptBuilder.build_payload(
+            problem_description,
+            language=language,
+            attempt_number=attempt_number,
+        )
+        request = Request(
+            url=getattr(settings, "OLLAMA_API_URL", "http://localhost:11434/api/generate"),
+            data=json.dumps(payload).encode("utf-8"),
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+
+        try:
+            with urlopen(request, timeout=getattr(settings, "OLLAMA_TIMEOUT", 30)) as response:
+                body = response.read().decode("utf-8")
+        except (HTTPError, URLError, OSError, TimeoutError) as exc:
+            raise ExternalServiceError(
+                detail="Unable to analyze the problem right now.",
+                code="ollama_unavailable",
+                details={"detail": "Failed to reach the local Ollama service."},
+            ) from exc
+
+        try:
+            response_payload = json.loads(body)
+        except json.JSONDecodeError as exc:
+            raise ExternalServiceError(
+                detail="Unable to analyze the problem right now.",
+                code="ollama_response_invalid",
+                details={"detail": "Ollama returned an invalid response payload."},
+            ) from exc
+
+        generated_text = response_payload.get("response")
+        if not isinstance(generated_text, str) or not generated_text.strip():
+            raise ExternalServiceError(
+                detail="Unable to analyze the problem right now.",
+                code="ollama_response_invalid",
+                details={"detail": "Ollama response did not include generated analysis text."},
+            )
+
+        return generated_text
+
+
+class ProblemAnalysisPayloadParser:
+    @classmethod
+    def parse(cls, raw_analysis: str) -> dict[str, Any]:
+        for candidate in cls._candidate_strings(raw_analysis):
+            parsed = cls._try_parse_json(candidate)
+            unwrapped_payload = cls._unwrap_analysis_payload(parsed)
+            if isinstance(unwrapped_payload, dict):
+                return unwrapped_payload
+
+        raise ExternalServiceError(
+            detail="Unable to analyze the problem right now.",
+            code="ollama_analysis_invalid",
+            details={"detail": "The model response could not be cleaned into valid JSON."},
+        )
+
+    @classmethod
+    def prepare(cls, payload: dict[str, Any], *, analysis_keys: tuple[str, ...]) -> dict[str, Any]:
+        cls.validate_required_keys(payload, analysis_keys=analysis_keys)
+        return {key: payload.get(key) for key in analysis_keys}
+
+    @staticmethod
+    def validate_required_keys(payload: dict[str, Any], *, analysis_keys: tuple[str, ...]) -> None:
+        missing_keys = [key for key in analysis_keys if key not in payload]
+        if missing_keys:
+            raise ExternalServiceError(
+                detail="Unable to analyze the problem right now.",
+                code="ollama_analysis_incomplete",
+                details={
+                    "detail": "The model response is missing required analysis fields.",
+                    "missing_fields": missing_keys,
+                },
+            )
+
+    @classmethod
+    def _candidate_strings(cls, raw_analysis: str) -> list[str]:
+        candidates = []
+        stripped = cls._clean_text(raw_analysis)
+        if stripped:
+            candidates.append(stripped)
+
+        without_fences = cls._strip_code_fences(stripped)
+        if without_fences and without_fences not in candidates:
+            candidates.append(without_fences)
+
+        extracted_object = cls._extract_json_object(without_fences)
+        if extracted_object and extracted_object not in candidates:
+            candidates.append(extracted_object)
+
+        return candidates
+
+    @staticmethod
+    def _unwrap_analysis_payload(payload: dict[str, Any] | None) -> dict[str, Any] | None:
+        if not isinstance(payload, dict):
+            return None
+
+        for key in ["analysis", "data", "result"]:
+            nested_payload = payload.get(key)
+            if isinstance(nested_payload, dict):
+                return nested_payload
+        return payload
+
+    @staticmethod
+    def _clean_text(value: str) -> str:
+        return (
+            value.replace("\ufeff", "")
+            .replace("“", '"')
+            .replace("”", '"')
+            .replace("’", "'")
+            .strip()
+        )
+
+    @staticmethod
+    def _strip_code_fences(value: str) -> str:
+        return re.sub(r"^```(?:json)?\s*|\s*```$", "", value.strip(), flags=re.IGNORECASE)
+
+    @staticmethod
+    def _extract_json_object(value: str) -> str:
+        start = value.find("{")
+        end = value.rfind("}")
+        if start == -1 or end == -1 or end <= start:
+            return ""
+        return value[start : end + 1]
+
+    @staticmethod
+    def _try_parse_json(value: str) -> dict[str, Any] | None:
+        if not value:
+            return None
+
+        try:
+            parsed = json.loads(value)
+        except json.JSONDecodeError:
+            try:
+                parsed = ast.literal_eval(value)
+            except (SyntaxError, ValueError):
+                return None
+
+        return parsed if isinstance(parsed, dict) else None
+
+
 class ProblemAnalysisService:
     MAX_ANALYSIS_ATTEMPTS = 2
     ANALYSIS_KEYS = (
@@ -542,77 +756,11 @@ class ProblemAnalysisService:
 
     @classmethod
     def _generate_analysis(cls, problem_description: str, *, language: str, attempt_number: int = 1) -> str:
-        language_instruction = "Arabic" if language == "ar" else "English"
-        retry_instruction = ""
-        if attempt_number > 1:
-            retry_instruction = (
-                " Previous response was invalid or incomplete. "
-                "Return every key in the schema with valid JSON only and do not omit fields."
-            )
-        payload = {
-            "model": getattr(settings, "OLLAMA_MODEL", "qwen2.5:3b"),
-            "stream": False,
-            "format": "json",
-            "system": (
-                "You are a service-triage assistant. Reply with JSON only. "
-                "Do not include markdown, code fences, comments, or explanatory text. "
-                "Return exactly this schema: "
-                '{"service_category":"","provider_type":"","likely_issue":"","urgency":"","keywords":[],"suggested_solution":"","quick_tips":[]}.'
-            ),
-            "prompt": (
-                "Analyze the following customer problem and return the best structured JSON response. "
-                "The customer problem description may be written in Arabic or English, and you must understand both languages. "
-                "The service_category, provider_type, and urgency must always be returned as fixed lowercase English identifiers only. "
-                "Allowed service_category values: plumbing, electrical, cleaning, painting, landscaping, moving, carpentry, air_conditioning. "
-                "Allowed provider_type values: plumber, electrician, cleaner, painter, landscaper, mover, carpenter, ac_technician. "
-                "Allowed urgency values: low, medium, high. "
-                "If the input is Arabic, still map these enum fields to English. "
-                "Example Arabic mapping: 'عندي تسريب ماء تحت المغسلة' -> service_category='plumbing', provider_type='plumber', urgency='medium'. "
-                f"{retry_instruction}"
-                f"Write likely_issue, suggested_solution, and quick_tips in {language_instruction}. "
-                "The suggested_solution must be a short practical next action. "
-                "The quick_tips must be short, safe, and practical steps the user can try before contacting a provider.\n"
-                f"Problem description: {problem_description.strip()}"
-            ),
-            "options": {
-                "temperature": 0.1,
-            },
-        }
-        request = Request(
-            url=getattr(settings, "OLLAMA_API_URL", "http://localhost:11434/api/generate"),
-            data=json.dumps(payload).encode("utf-8"),
-            headers={"Content-Type": "application/json"},
-            method="POST",
+        return OllamaAnalysisClient.generate(
+            problem_description,
+            language=language,
+            attempt_number=attempt_number,
         )
-
-        try:
-            with urlopen(request, timeout=getattr(settings, "OLLAMA_TIMEOUT", 30)) as response:
-                body = response.read().decode("utf-8")
-        except (HTTPError, URLError, OSError, TimeoutError) as exc:
-            raise ExternalServiceError(
-                detail="Unable to analyze the problem right now.",
-                code="ollama_unavailable",
-                details={"detail": "Failed to reach the local Ollama service."},
-            ) from exc
-
-        try:
-            response_payload = json.loads(body)
-        except json.JSONDecodeError as exc:
-            raise ExternalServiceError(
-                detail="Unable to analyze the problem right now.",
-                code="ollama_response_invalid",
-                details={"detail": "Ollama returned an invalid response payload."},
-            ) from exc
-
-        generated_text = response_payload.get("response")
-        if not isinstance(generated_text, str) or not generated_text.strip():
-            raise ExternalServiceError(
-                detail="Unable to analyze the problem right now.",
-                code="ollama_response_invalid",
-                details={"detail": "Ollama response did not include generated analysis text."},
-            )
-
-        return generated_text
 
     @staticmethod
     def _normalize_language(value: Any) -> str:
@@ -635,83 +783,31 @@ class ProblemAnalysisService:
 
     @classmethod
     def _parse_analysis_payload(cls, raw_analysis: str) -> dict[str, Any]:
-        candidates = []
-        stripped = cls._clean_text(raw_analysis)
-        if stripped:
-            candidates.append(stripped)
-
-        without_fences = cls._strip_code_fences(stripped)
-        if without_fences and without_fences not in candidates:
-            candidates.append(without_fences)
-
-        extracted_object = cls._extract_json_object(without_fences)
-        if extracted_object and extracted_object not in candidates:
-            candidates.append(extracted_object)
-
-        for candidate in candidates:
-            parsed = cls._try_parse_json(candidate)
-            if isinstance(parsed, dict):
-                return parsed
-
-        raise ExternalServiceError(
-            detail="Unable to analyze the problem right now.",
-            code="ollama_analysis_invalid",
-            details={"detail": "The model response could not be cleaned into valid JSON."},
-        )
+        return ProblemAnalysisPayloadParser.parse(raw_analysis)
 
     @classmethod
     def _validate_analysis_payload(cls, payload: dict[str, Any]) -> None:
-        missing_keys = [key for key in cls.ANALYSIS_KEYS if key not in payload]
-        if missing_keys:
-            raise ExternalServiceError(
-                detail="Unable to analyze the problem right now.",
-                code="ollama_analysis_incomplete",
-                details={
-                    "detail": "The model response is missing required analysis fields.",
-                    "missing_fields": missing_keys,
-                },
-            )
+        ProblemAnalysisPayloadParser.validate_required_keys(payload, analysis_keys=cls.ANALYSIS_KEYS)
 
     @classmethod
     def _prepare_analysis_payload(cls, payload: dict[str, Any]) -> dict[str, Any]:
-        return {key: payload.get(key) for key in cls.ANALYSIS_KEYS}
+        return ProblemAnalysisPayloadParser.prepare(payload, analysis_keys=cls.ANALYSIS_KEYS)
 
     @staticmethod
     def _clean_text(value: str) -> str:
-        return (
-            value.replace("\ufeff", "")
-            .replace("“", '"')
-            .replace("”", '"')
-            .replace("’", "'")
-            .strip()
-        )
+        return ProblemAnalysisPayloadParser._clean_text(value)
 
     @staticmethod
     def _strip_code_fences(value: str) -> str:
-        return re.sub(r"^```(?:json)?\s*|\s*```$", "", value.strip(), flags=re.IGNORECASE)
+        return ProblemAnalysisPayloadParser._strip_code_fences(value)
 
     @staticmethod
     def _extract_json_object(value: str) -> str:
-        start = value.find("{")
-        end = value.rfind("}")
-        if start == -1 or end == -1 or end <= start:
-            return ""
-        return value[start : end + 1]
+        return ProblemAnalysisPayloadParser._extract_json_object(value)
 
     @staticmethod
     def _try_parse_json(value: str) -> dict[str, Any] | None:
-        if not value:
-            return None
-
-        try:
-            parsed = json.loads(value)
-        except json.JSONDecodeError:
-            try:
-                parsed = ast.literal_eval(value)
-            except (SyntaxError, ValueError):
-                return None
-
-        return parsed if isinstance(parsed, dict) else None
+        return ProblemAnalysisPayloadParser._try_parse_json(value)
 
     @classmethod
     def _normalize_analysis(cls, payload: dict[str, Any], *, problem_description: str = "") -> dict[str, Any]:
@@ -836,7 +932,7 @@ class ProblemAnalysisService:
             lines = [line.strip("- *\t") for line in re.split(r"\r?\n", stripped) if line.strip()]
             if len(lines) > 1:
                 return lines
-            return [part.strip() for part in re.split(r",|;", stripped) if part.strip()]
+            return [part.strip() for part in re.split(r",|;|،", stripped) if part.strip()]
         return [value]
 
     @classmethod
@@ -877,17 +973,40 @@ class ProblemAnalysisService:
             return ""
 
         for canonical, options in aliases.items():
-            normalized_options = {cls._normalize_lookup_text(option) for option in options}
-            normalized_options.add(cls._normalize_lookup_text(canonical))
+            normalized_options = cls._normalized_alias_options(canonical, options)
             if normalized_value in normalized_options:
                 return canonical
 
         for canonical, options in aliases.items():
-            normalized_options = {cls._normalize_lookup_text(option) for option in options}
-            normalized_options.add(cls._normalize_lookup_text(canonical))
+            normalized_options = cls._normalized_alias_options(canonical, options)
             if any(option and (option in normalized_value or normalized_value in option) for option in normalized_options):
                 return canonical
         return ""
+
+    @classmethod
+    def _normalized_alias_options(cls, canonical: str, options: set[str]) -> set[str]:
+        normalized_options = {cls._normalize_lookup_text(option) for option in options}
+        normalized_options.add(cls._normalize_lookup_text(canonical))
+        return {option for option in normalized_options if option}
+
+    @classmethod
+    def _best_text_alias_match(cls, text: str, aliases: dict[str, set[str]]) -> str:
+        best_match = ""
+        best_score = 0
+
+        for canonical, options in aliases.items():
+            score = sum(1 for option in cls._normalized_alias_options(canonical, options) if cls._text_contains_term(text, option))
+            if score > best_score:
+                best_match = canonical
+                best_score = score
+
+        return best_match
+
+    @staticmethod
+    def _text_contains_term(text: str, term: str) -> bool:
+        if not text or not term:
+            return False
+        return re.search(rf"(?<!\w){re.escape(term)}(?!\w)", text) is not None
 
     @classmethod
     def _to_snake_case(cls, value: Any) -> str:
@@ -916,10 +1035,22 @@ class ProblemAnalysisService:
         if not combined_text:
             return ""
 
+        matched_category = cls._best_text_alias_match(combined_text, cls.SERVICE_CATEGORY_ALIASES)
+        if matched_category:
+            return matched_category
+
+        matched_provider_type = cls._best_text_alias_match(combined_text, cls.PROVIDER_TYPE_ALIASES)
+        if matched_provider_type:
+            return cls.PROVIDER_TYPE_TO_SERVICE_CATEGORY.get(matched_provider_type, "")
+
         best_match = ""
         best_score = 0
         for category, hints in cls.SERVICE_CATEGORY_HINTS.items():
-            score = sum(1 for hint in hints if hint and cls._normalize_lookup_text(hint) in combined_text)
+            score = sum(
+                1
+                for hint in hints
+                if hint and cls._text_contains_term(combined_text, cls._normalize_lookup_text(hint))
+            )
             if score > best_score:
                 best_match = category
                 best_score = score
@@ -930,6 +1061,11 @@ class ProblemAnalysisService:
         explicit_provider_type = cls._match_alias(payload.get("provider_type"), cls.PROVIDER_TYPE_ALIASES)
         if explicit_provider_type:
             return explicit_provider_type
+
+        combined_text = cls._combined_analysis_text(problem_description, payload)
+        matched_provider_type = cls._best_text_alias_match(combined_text, cls.PROVIDER_TYPE_ALIASES)
+        if matched_provider_type:
+            return matched_provider_type
 
         inferred_category = service_category or cls._infer_service_category(problem_description, payload)
         return cls.SERVICE_CATEGORY_TO_PROVIDER_TYPE.get(inferred_category, "")
@@ -964,8 +1100,12 @@ class ProblemAnalysisService:
     @classmethod
     def _combined_analysis_text(cls, problem_description: str, payload: dict[str, Any]) -> str:
         parts = [problem_description]
-        parts.extend(str(payload.get(key) or "") for key in ["service_category", "provider_type", "likely_issue", "urgency"])
+        parts.extend(
+            str(payload.get(key) or "")
+            for key in ["service_category", "provider_type", "likely_issue", "urgency", "suggested_solution"]
+        )
         parts.extend(str(item) for item in cls._coerce_list_value(payload.get("keywords")))
+        parts.extend(str(item) for item in cls._coerce_list_value(payload.get("quick_tips")))
         return cls._normalize_lookup_text(" ".join(part for part in parts if part))
 
 
