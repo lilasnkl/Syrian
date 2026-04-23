@@ -36,30 +36,6 @@ export interface Provider {
   featured?: boolean;
 }
 
-export interface RecommendationAnalysis {
-  serviceCategory: string;
-  providerType: string;
-  likelyIssue: string;
-  urgency: string;
-  keywords: string[];
-  suggestedSolution: string;
-  quickTips: string[];
-}
-
-export interface RecommendedProviderMatch {
-  id: string;
-  name: string;
-  rating: number;
-  distance: number;
-  priceRange: string;
-  score: number;
-}
-
-export interface ProviderRecommendationResult {
-  analysis: RecommendationAnalysis;
-  topProviders: RecommendedProviderMatch[];
-}
-
 export interface PortfolioItem {
   id: string;
   title: string;

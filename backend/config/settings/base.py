@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     "apps.accounts.apps.AccountsConfig",
     "apps.providers.apps.ProvidersConfig",
     "apps.services.apps.ServicesConfig",
+    "apps.recommendations.apps.RecommendationsConfig",
     "apps.orders.apps.OrdersConfig",
     "apps.bids.apps.BidsConfig",
     "apps.chat.apps.ChatConfig",

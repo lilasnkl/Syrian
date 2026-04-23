@@ -13,12 +13,13 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
-import { recommendProviders } from '@/features/providers/api';
-import { mapProviderRecommendationResult } from '@/features/providers/mapper';
+import { recommendProviders } from '@/features/recommendations/api';
+import { mapRecommendationResult } from '@/features/recommendations/mapper';
+import type { RecommendationResult } from '@/features/recommendations/types';
 import { useSkeletonLoading } from '@/hooks/use-skeleton-loading';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { useDataStore } from '@/stores/data-store';
-import type { Provider, ProviderRecommendationResult } from '@/types';
+import type { Provider } from '@/types';
 
 function formatLabel(value: string): string {
   if (!value) {
@@ -34,7 +35,7 @@ function formatLabel(value: string): string {
 }
 
 function buildRecommendationCard(
-  match: ProviderRecommendationResult['topProviders'][number],
+  match: RecommendationResult['topProviders'][number],
   providers: Provider[],
   analysisCategory: string,
 ) {
@@ -64,7 +65,7 @@ const AIRecommendPage = () => {
   const { isLoading: skeletonLoading } = useSkeletonLoading();
   const { t } = useLanguage();
   const [query, setQuery] = useState('');
-  const [recommendation, setRecommendation] = useState<ProviderRecommendationResult | null>(null);
+  const [recommendation, setRecommendation] = useState<RecommendationResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
   const [error, setError] = useState('');
@@ -113,7 +114,7 @@ const AIRecommendPage = () => {
         budget: null,
       });
 
-      setRecommendation(mapProviderRecommendationResult(response));
+      setRecommendation(mapRecommendationResult(response));
     } catch (searchError) {
       setError(getErrorMessage(searchError));
     } finally {

@@ -7,11 +7,12 @@ from shared.exceptions import ExternalServiceError
 
 from .recommendation_analysis import (
     OllamaAnalysisClient,
-    ProblemAnalysisNormalizer,
     ProblemAnalysisPayloadParser,
     ProblemLanguageResolver,
 )
+from .recommendation_analysis_result import ProblemAnalysisResponseBuilder, ProblemAnalysisResponseValidator
 from .recommendation_provider_engine import ProviderRecommendationFinder, ProviderRecommendationRanker
+from .recommendation_taxonomy import RecommendationTaxonomy
 
 
 logger = logging.getLogger(__name__)
@@ -19,11 +20,12 @@ logger = logging.getLogger(__name__)
 
 class ProblemAnalysisService:
     MAX_ANALYSIS_ATTEMPTS = 2
-    ANALYSIS_KEYS = ProblemAnalysisNormalizer.ANALYSIS_KEYS
+    ANALYSIS_KEYS = RecommendationTaxonomy.ANALYSIS_KEYS
     language_resolver_class = ProblemLanguageResolver
     analysis_client_class = OllamaAnalysisClient
     payload_parser_class = ProblemAnalysisPayloadParser
-    normalizer_class = ProblemAnalysisNormalizer
+    response_builder_class = ProblemAnalysisResponseBuilder
+    response_validator_class = ProblemAnalysisResponseValidator
 
     @classmethod
     def analyze(cls, problem_description: str, *, language: str = "en") -> dict[str, Any]:
@@ -79,20 +81,16 @@ class ProblemAnalysisService:
         return cls.payload_parser_class.parse(raw_analysis)
 
     @classmethod
-    def _validate_analysis_payload(cls, payload: dict[str, Any]) -> None:
-        cls.payload_parser_class.validate_required_keys(payload, analysis_keys=cls.ANALYSIS_KEYS)
-
-    @classmethod
     def _prepare_analysis_payload(cls, payload: dict[str, Any]) -> dict[str, Any]:
         return cls.payload_parser_class.prepare(payload, analysis_keys=cls.ANALYSIS_KEYS)
 
     @classmethod
     def _normalize_analysis(cls, payload: dict[str, Any], *, problem_description: str = "") -> dict[str, Any]:
-        return cls.normalizer_class.normalize(payload, problem_description=problem_description)
+        return cls.response_builder_class.build(payload, problem_description=problem_description)
 
     @classmethod
     def _validate_normalized_analysis(cls, analysis: dict[str, Any]) -> None:
-        cls.normalizer_class.validate(analysis)
+        cls.response_validator_class.validate(analysis)
 
 
 class ProviderRecommendationService:

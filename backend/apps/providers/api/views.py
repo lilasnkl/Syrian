@@ -9,14 +9,11 @@ from rest_framework.parsers import JSONParser
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework import permissions
 from rest_framework.exceptions import ValidationError
-from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.providers.repositories import ProviderRepository
 from apps.providers.selectors import get_provider_earnings_snapshot, providers_queryset, verification_queryset
 from apps.providers.services import (
-    ProblemAnalysisService,
-    ProviderRecommendationService,
     ProviderService,
     VerificationService,
 )
@@ -25,8 +22,6 @@ from shared.responses import success_response
 from .serializers import (
     ProviderProfileSerializer,
     ProviderProfileUpdateSerializer,
-    RecommendProvidersRequestSerializer,
-    RecommendProvidersResponseSerializer,
     ReviewVerificationSerializer,
     SubmitVerificationSerializer,
     VerificationRequestSerializer,
@@ -59,34 +54,6 @@ class ProviderListView(APIView):
 
         serializer = ProviderProfileSerializer(queryset, many=True)
         return success_response(data={"providers": serializer.data}, message="Providers list")
-
-
-class RecommendProvidersView(APIView):
-    permission_classes = [permissions.AllowAny]
-
-    def post(self, request):
-        serializer = RecommendProvidersRequestSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-
-        analysis = ProblemAnalysisService.analyze(
-            serializer.validated_data["problem_description"],
-            language=serializer.validated_data.get("language", "en"),
-        )
-        top_providers = ProviderRecommendationService.recommend(
-            analysis=analysis,
-            user_lat=serializer.validated_data.get("user_lat"),
-            user_lng=serializer.validated_data.get("user_lng"),
-            budget=serializer.validated_data.get("budget"),
-            limit=3,
-        )
-
-        response_payload = {
-            "analysis": analysis,
-            "top_providers": top_providers,
-        }
-        response_serializer = RecommendProvidersResponseSerializer(data=response_payload)
-        response_serializer.is_valid(raise_exception=True)
-        return Response(response_serializer.validated_data)
 
 
 class ProviderDetailView(APIView):

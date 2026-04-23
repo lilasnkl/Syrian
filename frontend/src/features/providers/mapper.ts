@@ -1,8 +1,5 @@
 import type {
   Provider,
-  ProviderRecommendationResult,
-  RecommendedProviderMatch,
-  RecommendationAnalysis,
   Service,
   ServiceCategory,
   VerificationRequest,
@@ -56,30 +53,6 @@ export interface BackendVerificationRequest {
   rejection_reason: string;
   submitted_at: string;
   reviewed_at: string | null;
-}
-
-export interface BackendRecommendationAnalysis {
-  service_category: string;
-  provider_type: string;
-  likely_issue: string;
-  urgency: string;
-  keywords: string[];
-  suggested_solution: string;
-  quick_tips: string[];
-}
-
-export interface BackendRecommendedProviderMatch {
-  id: number | string;
-  name: string;
-  rating: number;
-  distance: number;
-  price_range: string;
-  score: number;
-}
-
-export interface BackendProviderRecommendationResult {
-  analysis: BackendRecommendationAnalysis;
-  top_providers: BackendRecommendedProviderMatch[];
 }
 
 function normalizeCategory(category: string): ServiceCategory {
@@ -152,37 +125,5 @@ export function mapVerificationRequest(request: BackendVerificationRequest, prov
     rejectionReason: request.rejection_reason || undefined,
     yearsExperience: request.years_experience ?? undefined,
     serviceAreas: request.service_areas ?? undefined,
-  };
-}
-
-export function mapRecommendationAnalysis(analysis: BackendRecommendationAnalysis): RecommendationAnalysis {
-  return {
-    serviceCategory: analysis.service_category,
-    providerType: analysis.provider_type,
-    likelyIssue: analysis.likely_issue,
-    urgency: analysis.urgency,
-    keywords: analysis.keywords ?? [],
-    suggestedSolution: analysis.suggested_solution,
-    quickTips: analysis.quick_tips ?? [],
-  };
-}
-
-export function mapRecommendedProviderMatch(match: BackendRecommendedProviderMatch): RecommendedProviderMatch {
-  return {
-    id: String(match.id),
-    name: match.name,
-    rating: toNumber(match.rating),
-    distance: toNumber(match.distance),
-    priceRange: match.price_range || "",
-    score: toNumber(match.score),
-  };
-}
-
-export function mapProviderRecommendationResult(
-  recommendation: BackendProviderRecommendationResult
-): ProviderRecommendationResult {
-  return {
-    analysis: mapRecommendationAnalysis(recommendation.analysis),
-    topProviders: (recommendation.top_providers ?? []).map(mapRecommendedProviderMatch),
   };
 }

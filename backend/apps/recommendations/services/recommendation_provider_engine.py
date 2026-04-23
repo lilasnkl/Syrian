@@ -11,7 +11,7 @@ from apps.providers.selectors import providers_queryset
 from apps.services.models import ServiceListing
 from shared.constants import ACTIVE
 
-from .recommendation_analysis import ProblemAnalysisNormalizer
+from .recommendation_text import RecommendationTextProcessor
 
 
 @dataclass(frozen=True)
@@ -41,10 +41,10 @@ class ProviderRecommendationFinder:
 
     @classmethod
     def _build_filter_query(cls, analysis: dict[str, Any]) -> Q | None:
-        service_category = ProblemAnalysisNormalizer.normalize_text(analysis.get("service_category")).replace("_", " ")
-        service_category_raw = ProblemAnalysisNormalizer.normalize_text(analysis.get("service_category"))
-        provider_type = ProblemAnalysisNormalizer.normalize_text(analysis.get("provider_type")).replace("_", " ")
-        keywords = [ProblemAnalysisNormalizer.normalize_text(keyword) for keyword in analysis.get("keywords", [])]
+        service_category = RecommendationTextProcessor.normalize_text(analysis.get("service_category")).replace("_", " ")
+        service_category_raw = RecommendationTextProcessor.normalize_text(analysis.get("service_category"))
+        provider_type = RecommendationTextProcessor.normalize_text(analysis.get("provider_type")).replace("_", " ")
+        keywords = [RecommendationTextProcessor.normalize_text(keyword) for keyword in analysis.get("keywords", [])]
 
         filters = Q()
         has_filters = False
@@ -126,7 +126,7 @@ class ProviderRecommendationFinder:
 
     @staticmethod
     def _normalize_match_text(value: str) -> str:
-        return ProblemAnalysisNormalizer.normalize_lookup_text(value)
+        return RecommendationTextProcessor.normalize_lookup_text(value)
 
     @staticmethod
     def _reference_price(provider, services: list[ServiceListing]) -> Decimal | None:
@@ -265,7 +265,7 @@ class ProviderRecommendationRanker:
 
     @staticmethod
     def _normalize_match_text(value: str) -> str:
-        return ProblemAnalysisNormalizer.normalize_lookup_text(value)
+        return RecommendationTextProcessor.normalize_lookup_text(value)
 
     @staticmethod
     def _has_token_overlap(term: str, text: str) -> bool:

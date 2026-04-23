@@ -92,7 +92,7 @@ class RecommendProvidersApiTests(APITestCase):
         )
 
     @patch(
-        "apps.providers.services.recommendation_service.ProblemAnalysisService._generate_analysis",
+        "apps.recommendations.services.recommendation_service.ProblemAnalysisService._generate_analysis",
         return_value=(
             "```json\n"
             "{\n"
@@ -147,7 +147,7 @@ class RecommendProvidersApiTests(APITestCase):
         self.assertEqual(scores, sorted(scores, reverse=True))
 
     @patch(
-        "apps.providers.services.recommendation_service.ProblemAnalysisService._generate_analysis",
+        "apps.recommendations.services.recommendation_service.ProblemAnalysisService._generate_analysis",
         return_value=(
             "{"
             '"service_category": "plumbing", '
@@ -180,7 +180,7 @@ class RecommendProvidersApiTests(APITestCase):
         self.assertEqual(body["analysis"]["quick_tips"], ["ضع وعاء تحت التسريب", "جفف الأرضية لتجنب الانزلاق"])
 
     @patch(
-        "apps.providers.services.recommendation_service.ProblemAnalysisService._generate_analysis",
+        "apps.recommendations.services.recommendation_service.ProblemAnalysisService._generate_analysis",
         return_value=(
             "{"
             '"service_category": "سباكة", '
@@ -194,7 +194,7 @@ class RecommendProvidersApiTests(APITestCase):
         ),
     )
     def test_recommend_providers_normalizes_arabic_enums_and_filters_matching_category(self, _mock_analysis):
-        with self.assertLogs("apps.providers.services.recommendation_service", level="INFO") as captured_logs:
+        with self.assertLogs("apps.recommendations.services.recommendation_service", level="INFO") as captured_logs:
             response = self.client.post(
                 self.endpoint,
                 {
@@ -221,7 +221,7 @@ class RecommendProvidersApiTests(APITestCase):
         self.assertTrue(any('"service_category": "plumbing"' in message for message in captured_logs.output))
 
     @patch(
-        "apps.providers.services.recommendation_service.ProblemAnalysisService._generate_analysis",
+        "apps.recommendations.services.recommendation_service.ProblemAnalysisService._generate_analysis",
         return_value=(
             "{"
             '"service_category": "", '
@@ -259,7 +259,7 @@ class RecommendProvidersApiTests(APITestCase):
         self.assertNotIn("Trusted Plumber", provider_names)
 
     @patch(
-        "apps.providers.services.recommendation_service.ProblemAnalysisService._generate_analysis",
+        "apps.recommendations.services.recommendation_service.ProblemAnalysisService._generate_analysis",
         side_effect=[
             (
                 "{"
@@ -316,7 +316,7 @@ class RecommendProvidersApiTests(APITestCase):
         self.assertEqual(response.json()["error"]["code"], "validation_error")
 
     @patch(
-        "apps.providers.services.recommendation_service.ProblemAnalysisService._generate_analysis",
+        "apps.recommendations.services.recommendation_service.ProblemAnalysisService._generate_analysis",
         side_effect=Exception("should be replaced"),
     )
     def test_recommend_providers_returns_503_when_ollama_is_unavailable(self, mock_analysis):
@@ -342,7 +342,37 @@ class RecommendProvidersApiTests(APITestCase):
         self.assertEqual(response.json()["error"]["code"], "ollama_unavailable")
 
     @patch(
-        "apps.providers.services.recommendation_service.ProblemAnalysisService._generate_analysis",
+        "apps.recommendations.services.recommendation_service.ProblemAnalysisService._generate_analysis",
+        return_value=(
+            "{"
+            '"service_category": "air_conditioning", '
+            '"provider_type": "ac_technician", '
+            '"likely_issue": "", '
+            '"urgency": "medium", '
+            '"keywords": ["air conditioner", "not cooling"], '
+            '"suggested_solution": "Turn the unit off and arrange an inspection.", '
+            '"quick_tips": ["Turn the AC off for a few minutes before restarting", "Check whether the filter is blocked"]'
+            "}"
+        ),
+    )
+    def test_recommend_providers_falls_back_to_problem_description_when_likely_issue_is_missing(self, _mock_analysis):
+        problem_description = "The air conditioner is not cooling and keeps turning off"
+
+        response = self.client.post(
+            self.endpoint,
+            {
+                "problem_description": problem_description,
+                "user_lat": 33.5138,
+                "user_lng": 36.2765,
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json()["analysis"]["likely_issue"], problem_description)
+
+    @patch(
+        "apps.recommendations.services.recommendation_service.ProblemAnalysisService._generate_analysis",
         return_value=(
             "{"
             '"service_category": "plumbing", '

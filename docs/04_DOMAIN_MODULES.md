@@ -4,6 +4,7 @@
 - accounts: identity, roles, profiles, auth/session
 - providers: provider business profile and verification
 - services: provider service listings
+- recommendations: AI problem analysis and provider recommendation orchestration
 - orders: customer requests/order lifecycle
 - bids: provider offers and acceptance workflow
 - chat: conversations and messages

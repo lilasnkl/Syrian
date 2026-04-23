@@ -8,6 +8,7 @@ backend/
     accounts/
     providers/
     services/
+    recommendations/
     orders/
     bids/
     chat/

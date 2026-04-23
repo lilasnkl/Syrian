@@ -3,11 +3,9 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 
-from apps.providers.api.views import RecommendProvidersView
-
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("recommend-providers/", RecommendProvidersView.as_view(), name="recommend-providers"),
+    path("", include("apps.recommendations.api.urls")),
     path("api/v1/auth/", include("apps.accounts.api.urls")),
     path("api/v1/providers/", include("apps.providers.api.urls")),
     path("api/v1/services/", include("apps.services.api.urls")),
