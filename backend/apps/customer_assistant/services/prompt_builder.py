@@ -2,7 +2,11 @@ import json
 
 
 class CustomerRagPromptBuilder:
-    PROMPT_VERSION = "customer-rag-v1"
+    PROMPT_VERSION = "customer-rag-v2"
+
+    @classmethod
+    def prompt_cache_key(cls, *, provider) -> str:
+        return f"{cls.PROMPT_VERSION}:provider:{provider.id}"
 
     @staticmethod
     def build_system_prompt() -> str:
@@ -25,7 +29,6 @@ class CustomerRagPromptBuilder:
                     "chunk_id": chunk.id,
                     "source_id": chunk.source_id,
                     "source_title": chunk.source.title,
-                    "score": round(item.score, 4),
                     "page_number": chunk.page_number,
                     "row_number": chunk.row_number,
                     "text": chunk.chunk_text,
@@ -33,14 +36,7 @@ class CustomerRagPromptBuilder:
             )
 
         payload = {
-            "customer_question": question,
-            "provider": {
-                "id": provider.id,
-                "display_name": provider.display_name,
-                "category": provider.category,
-                "is_verified": provider.is_verified,
-            },
-            "authorized_provider_evidence": evidence,
+            "prompt_version": cls.PROMPT_VERSION,
             "instructions": [
                 "Use only authorized_provider_evidence.",
                 "Return JSON matching the schema.",
@@ -48,8 +44,16 @@ class CustomerRagPromptBuilder:
                 "Use insufficient_evidence when the evidence is missing, indirect, stale, or ambiguous.",
                 "Keep the answer concise and customer friendly.",
             ],
+            "provider": {
+                "id": provider.id,
+                "display_name": provider.display_name,
+                "category": provider.category,
+                "is_verified": provider.is_verified,
+            },
+            "authorized_provider_evidence": evidence,
+            "customer_question": question,
         }
-        return json.dumps(payload, ensure_ascii=False)
+        return json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
 
     @staticmethod
     def output_schema() -> dict:
@@ -80,4 +84,3 @@ class CustomerRagPromptBuilder:
             },
             "required": ["answer_status", "answer", "citations", "customer_next_step"],
         }
-
