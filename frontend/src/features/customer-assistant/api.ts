@@ -39,3 +39,8 @@ export async function askProviderQuestion(input: {
   });
 }
 
+export async function listAssistantSessionTurns(sessionId: string | number) {
+  return httpRequest<{ turns: BackendAssistantTurn[] }>(`/customer-assistant/sessions/${sessionId}/turns/`, {
+    method: "GET",
+  });
+}

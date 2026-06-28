@@ -64,7 +64,7 @@ class AssistantQuestionService:
             answer=answer_payload["answer"],
             answer_status=answer_payload["answer_status"],
             customer_next_step=answer_payload.get("customer_next_step", ""),
-            model=getattr(settings, "OPENAI_CUSTOMER_QA_MODEL", "gpt-5.5"),
+            model=getattr(settings, "OPENAI_CUSTOMER_QA_MODEL", "gpt-4o-mini"),
             embedding_model=getattr(settings, "OPENAI_EMBEDDING_MODEL", "text-embedding-3-large"),
             prompt_version=CustomerRagPromptBuilder.PROMPT_VERSION,
         )

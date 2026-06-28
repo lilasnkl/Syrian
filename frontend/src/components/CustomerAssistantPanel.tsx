@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Bot, FileText, Send } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Bot, ExternalLink, FileText, Send } from "lucide-react";
 import { toast } from "sonner";
 
 import { askProviderQuestion, type BackendAssistantTurn } from "@/features/customer-assistant";
@@ -55,9 +56,17 @@ export function CustomerAssistantPanel({ providerId }: CustomerAssistantPanelPro
   return (
     <Card className="border-border bg-card">
       <CardContent className="space-y-4 p-6">
-        <div className="flex items-center gap-2">
-          <Bot className="h-5 w-5 text-primary" />
-          <h3 className="font-display text-lg font-semibold text-foreground">{t("assistant.title")}</h3>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-2">
+            <Bot className="h-5 w-5 text-primary" />
+            <h3 className="font-display text-lg font-semibold text-foreground">{t("assistant.title")}</h3>
+          </div>
+          <Button asChild variant="outline" size="sm" className="gap-2 sm:self-start">
+            <Link to={`/assistant?provider=${providerId}`}>
+              <ExternalLink className="h-4 w-4" />
+              {t("assistant.open_full")}
+            </Link>
+          </Button>
         </div>
         <div className="flex flex-col gap-3 sm:flex-row">
           <Textarea
@@ -100,4 +109,3 @@ export function CustomerAssistantPanel({ providerId }: CustomerAssistantPanelPro
     </Card>
   );
 }
-

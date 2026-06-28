@@ -124,7 +124,7 @@ Use environment-driven model settings:
 ```text
 OPENAI_API_KEY=...
 OPENAI_EMBEDDING_MODEL=text-embedding-3-large
-OPENAI_CUSTOMER_QA_MODEL=gpt-5.5
+OPENAI_CUSTOMER_QA_MODEL=gpt-4o-mini
 OPENAI_CUSTOMER_QA_REASONING_EFFORT=medium
 OPENAI_CUSTOMER_QA_VERBOSITY=medium
 RAG_TOP_K=8
@@ -136,7 +136,7 @@ Recommended defaults:
 
 - `text-embedding-3-large` for production answer quality.
 - `text-embedding-3-small` for lower-cost development or budget-sensitive deployments.
-- `gpt-5.5` for the customer-facing grounded answer generator, based on OpenAI's latest model guide at the time this document was prepared.
+- `gpt-4o-mini` for lower-cost customer-facing grounded answer generation, while still using the OpenAI Responses API.
 
 Keep every model in settings so model upgrades are configuration changes first and code changes only when the API surface changes.
 

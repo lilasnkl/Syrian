@@ -26,7 +26,7 @@ class OpenAIResponsesClient:
         try:
             client = OpenAI(api_key=api_key)
             response = client.responses.create(
-                model=getattr(settings, "OPENAI_CUSTOMER_QA_MODEL", "gpt-5.5"),
+                model=getattr(settings, "OPENAI_CUSTOMER_QA_MODEL", "gpt-4o-mini"),
                 input=[
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": user_prompt},
