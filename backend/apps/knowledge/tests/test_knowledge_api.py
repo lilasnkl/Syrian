@@ -1,5 +1,6 @@
 from unittest.mock import patch
 
+from django.core.cache import cache
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import override_settings
 from django.urls import reverse
@@ -8,12 +9,13 @@ from rest_framework.test import APITestCase
 
 from apps.accounts.models import User
 from apps.knowledge.models import KnowledgeChunk, KnowledgeDocument, KnowledgeIngestionJob, KnowledgeSource
-from apps.knowledge.services import KnowledgeIngestionService, RetrievalService
+from apps.knowledge.services import EmbeddingService, KnowledgeIngestionService, RetrievalService
 from apps.providers.models import ProviderProfile
 
 
 class KnowledgeApiTests(APITestCase):
     def setUp(self):
+        cache.clear()
         self.provider_user = User.objects.create_user(
             email="knowledge-provider@example.com",
             password="StrongPass123",
@@ -115,6 +117,18 @@ class KnowledgeApiTests(APITestCase):
 
         self.assertEqual([item.chunk.id for item in results], [public_chunk.id])
 
+    @override_settings(RAG_EMBEDDING_CACHE_TTL_SECONDS=600)
+    @patch("apps.knowledge.clients.openai_embedding_client.OpenAIEmbeddingClient.embed_texts")
+    def test_query_embedding_cache_reuses_repeated_question_embedding(self, mock_embed_texts):
+        mock_embed_texts.return_value = [[1.0, 0.0]]
+
+        first = EmbeddingService.embed_query("Do you provide emergency repair?")
+        second = EmbeddingService.embed_query("Do you provide emergency repair?")
+
+        self.assertEqual(first, [1.0, 0.0])
+        self.assertEqual(second, [1.0, 0.0])
+        mock_embed_texts.assert_called_once_with(["Do you provide emergency repair?"])
+
     def _create_chunk(self, *, title: str, visibility: str, text: str, embedding: list[float]):
         source = KnowledgeSource.objects.create(
             provider=self.provider,
@@ -144,4 +158,3 @@ class KnowledgeApiTests(APITestCase):
             visibility=visibility,
             is_active=True,
         )
-

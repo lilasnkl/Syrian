@@ -124,7 +124,7 @@ Use environment-driven model settings:
 ```text
 OPENAI_API_KEY=...
 OPENAI_EMBEDDING_MODEL=text-embedding-3-large
-OPENAI_CUSTOMER_QA_MODEL=gpt-5.5
+OPENAI_CUSTOMER_QA_MODEL=gpt-4o-mini
 OPENAI_CUSTOMER_QA_REASONING_EFFORT=medium
 OPENAI_CUSTOMER_QA_VERBOSITY=medium
 RAG_TOP_K=8
@@ -136,7 +136,7 @@ Recommended defaults:
 
 - `text-embedding-3-large` for production answer quality.
 - `text-embedding-3-small` for lower-cost development or budget-sensitive deployments.
-- `gpt-5.5` for the customer-facing grounded answer generator, based on OpenAI's latest model guide at the time this document was prepared.
+- `gpt-4o-mini` for lower-cost customer-facing grounded answer generation, while still using the OpenAI Responses API.
 
 Keep every model in settings so model upgrades are configuration changes first and code changes only when the API surface changes.
 
@@ -884,10 +884,14 @@ OPENAI_CUSTOMER_QA_MODEL
 OPENAI_CUSTOMER_QA_TIMEOUT
 OPENAI_CUSTOMER_QA_REASONING_EFFORT
 OPENAI_CUSTOMER_QA_VERBOSITY
+OPENAI_CUSTOMER_QA_MAX_OUTPUT_TOKENS
+OPENAI_CUSTOMER_QA_PROMPT_CACHE_RETENTION
 OPENAI_EMBEDDING_BATCH_SIZE
 RAG_TOP_K
 RAG_MAX_CONTEXT_TOKENS
 RAG_MIN_SIMILARITY
+RAG_EMBEDDING_CACHE_TTL_SECONDS
+RAG_ANSWER_CACHE_TTL_SECONDS
 RAG_MAX_UPLOAD_MB
 RAG_ALLOWED_MIME_TYPES
 RAG_ENABLE_IMAGE_OCR
@@ -916,17 +920,23 @@ Log the following server-side metadata:
 Do not log full provider documents or customer questions in production logs unless there is an explicit privacy-safe audit storage policy.
 
 ## Cost Controls
-Controls:
+Implemented controls:
 
-- Deduplicate by source checksum.
-- Reuse embeddings for unchanged chunk hashes.
-- Batch embedding calls.
-- Limit upload size.
-- Limit chunk count per source.
-- Limit `RAG_TOP_K`.
-- Cache embeddings for repeated normalized questions only when privacy policy allows.
-- Use `text-embedding-3-small` for development and automated tests.
-- Add per-provider and per-customer rate limits.
+- OpenAI prompt caching alignment: keep stable system instructions, provider metadata, and authorized evidence before the dynamic customer question so repeated provider/evidence prefixes can benefit from OpenAI's automatic prompt caching.
+- Prompt-cache telemetry: persist `input_tokens`, `output_tokens`, `cached_input_tokens`, `latency_ms`, and `answer_cache_hit` on each assistant turn.
+- Embedding cache: cache embeddings by model + SHA-256 text hash for repeated normalized questions and repeated chunk text.
+- Answer cache: cache only exact validated RAG answers for the same model, prompt version, provider, normalized question, and evidence fingerprint.
+- Evidence budget: enforce `RAG_MAX_CONTEXT_TOKENS` before building the LLM prompt.
+- Output cap: enforce `OPENAI_CUSTOMER_QA_MAX_OUTPUT_TOKENS` for customer answers.
+- Retrieval cap: keep `RAG_TOP_K` small and evidence-grounded.
+- File controls: limit upload size and MIME types.
+
+Important limits:
+
+- Prompt caching helps most when the same provider/evidence prefix repeats. It will not help much if every question retrieves a totally different context.
+- Embedding cache only helps exact normalized text repeats unless a future semantic-query cache is added.
+- Answer cache must stay evidence-aware; never cache by question alone.
+- For large async ingestion batches, consider OpenAI Batch API or provider-side worker scheduling, but do not use it for interactive customer answers.
 
 ## Quality and Evaluation Plan
 ### Unit Tests

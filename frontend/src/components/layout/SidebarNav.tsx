@@ -2,7 +2,7 @@
 import { useAuthStore } from '@/stores/auth-store';
 import { useLanguage } from '@/i18n/LanguageContext';
 import {
-  Search, FileText, MessageSquare, Bell, Scale, AlertTriangle, Sparkles,
+  Search, FileText, MessageSquare, Bell, Scale, AlertTriangle, Sparkles, Bot,
   LayoutDashboard, Briefcase, ClipboardList, UserCog,
   Shield, BarChart3, CheckCircle, User, Send, Inbox, Users, PlayCircle, FileSearch,
 } from 'lucide-react';
@@ -18,6 +18,7 @@ const clientNav: NavItem[] = [
   { to: '/my-bids', labelKey: 'nav.my_bids', icon: ClipboardList },
   { to: '/compare', labelKey: 'nav.compare', icon: Scale },
   { to: '/chat', labelKey: 'nav.chat', icon: MessageSquare },
+  { to: '/assistant', labelKey: 'nav.assistant', icon: Bot },
   { to: '/notifications', labelKey: 'nav.notifications', icon: Bell },
   { to: '/complaints', labelKey: 'nav.complaints', icon: AlertTriangle },
   { to: '/ai-recommend', labelKey: 'nav.ai_recommend', icon: Sparkles },

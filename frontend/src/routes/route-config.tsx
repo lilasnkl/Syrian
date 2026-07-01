@@ -10,6 +10,7 @@ const MyRequestsPage = lazy(() => import("@/pages/MyRequestsPage"));
 const MyBidsPage = lazy(() => import("@/pages/MyBidsPage"));
 const ComparePage = lazy(() => import("@/pages/ComparePage"));
 const ChatPage = lazy(() => import("@/pages/ChatPage"));
+const CustomerAssistantPage = lazy(() => import("@/pages/CustomerAssistantPage"));
 const NotificationsPage = lazy(() => import("@/pages/NotificationsPage"));
 const ComplaintsPage = lazy(() => import("@/pages/ComplaintsPage"));
 const AIRecommendPage = lazy(() => import("@/pages/AIRecommendPage"));
@@ -49,6 +50,7 @@ export const appRoutes: AppRouteConfig[] = [
   { path: "/my-bids", element: <MyBidsPage /> },
   { path: "/compare", element: <ComparePage /> },
   { path: "/chat", element: <ChatPage /> },
+  { path: "/assistant", element: <CustomerAssistantPage />, requiresAuth: true, roles: ["client"] },
   { path: "/notifications", element: <NotificationsPage /> },
   { path: "/complaints", element: <ComplaintsPage /> },
   { path: "/ai-recommend", element: <AIRecommendPage /> },

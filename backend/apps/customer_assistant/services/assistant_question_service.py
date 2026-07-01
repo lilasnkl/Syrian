@@ -55,6 +55,7 @@ class AssistantQuestionService:
             provider=provider,
             retrieved_chunks=retrieved_chunks,
         )
+        usage = answer_payload.get("usage", {})
         turn = AssistantRepository.create_turn(
             session=session,
             customer=actor,
@@ -64,9 +65,14 @@ class AssistantQuestionService:
             answer=answer_payload["answer"],
             answer_status=answer_payload["answer_status"],
             customer_next_step=answer_payload.get("customer_next_step", ""),
-            model=getattr(settings, "OPENAI_CUSTOMER_QA_MODEL", "gpt-5.5"),
+            model=getattr(settings, "OPENAI_CUSTOMER_QA_MODEL", "gpt-4o-mini"),
             embedding_model=getattr(settings, "OPENAI_EMBEDDING_MODEL", "text-embedding-3-large"),
             prompt_version=CustomerRagPromptBuilder.PROMPT_VERSION,
+            input_tokens=usage.get("input_tokens", 0),
+            output_tokens=usage.get("output_tokens", 0),
+            cached_input_tokens=usage.get("cached_input_tokens", 0),
+            answer_cache_hit=answer_payload.get("cache_hit", False),
+            latency_ms=answer_payload.get("latency_ms", 0),
         )
         cls.citation_service_class.create_citations(
             turn=turn,
@@ -123,4 +129,3 @@ class AssistantQuestionService:
             service=service,
             order=order,
         )
-
