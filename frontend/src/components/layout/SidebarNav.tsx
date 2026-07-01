@@ -4,7 +4,7 @@ import { useLanguage } from '@/i18n/LanguageContext';
 import {
   Search, FileText, MessageSquare, Bell, Scale, AlertTriangle, Sparkles,
   LayoutDashboard, Briefcase, ClipboardList, UserCog,
-  Shield, BarChart3, CheckCircle, User, Send, Inbox, Users, PlayCircle,
+  Shield, BarChart3, CheckCircle, User, Send, Inbox, Users, PlayCircle, FileSearch,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -33,6 +33,7 @@ const providerNav: NavItem[] = [
   { to: '/provider/earnings', labelKey: 'nav.earnings', icon: BarChart3 },
   { to: '/provider/profile', labelKey: 'nav.profile_settings', icon: UserCog },
   { to: '/provider/verification', labelKey: 'nav.verification', icon: Shield },
+  { to: '/provider/knowledge', labelKey: 'nav.knowledge', icon: FileSearch },
   { to: '/chat', labelKey: 'nav.chat', icon: MessageSquare },
   { to: '/notifications', labelKey: 'nav.notifications', icon: Bell },
 ];

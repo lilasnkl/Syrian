@@ -44,6 +44,8 @@ INSTALLED_APPS = [
     "apps.accounts.apps.AccountsConfig",
     "apps.providers.apps.ProvidersConfig",
     "apps.services.apps.ServicesConfig",
+    "apps.knowledge.apps.KnowledgeConfig",
+    "apps.customer_assistant.apps.CustomerAssistantConfig",
     "apps.recommendations.apps.RecommendationsConfig",
     "apps.orders.apps.OrdersConfig",
     "apps.bids.apps.BidsConfig",
@@ -206,3 +208,37 @@ CORS_ALLOW_CREDENTIALS = os.environ.get("CORS_ALLOW_CREDENTIALS", "True").lower(
 CORS_ALLOW_HEADERS = list(default_headers) + ["x-csrftoken"]
 CORS_EXPOSE_HEADERS = ["X-CSRFToken"]
 CSRF_TRUSTED_ORIGINS = [u for u in os.environ.get("CSRF_TRUSTED_ORIGINS", "").split(",") if u] or CORS_ALLOWED_ORIGINS
+
+OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
+OPENAI_EMBEDDING_MODEL = os.environ.get("OPENAI_EMBEDDING_MODEL", "text-embedding-3-large")
+OPENAI_CUSTOMER_QA_MODEL = os.environ.get("OPENAI_CUSTOMER_QA_MODEL", "gpt-5.5")
+OPENAI_CUSTOMER_QA_TIMEOUT = int(os.environ.get("OPENAI_CUSTOMER_QA_TIMEOUT", "45"))
+OPENAI_CUSTOMER_QA_REASONING_EFFORT = os.environ.get("OPENAI_CUSTOMER_QA_REASONING_EFFORT", "medium")
+OPENAI_CUSTOMER_QA_VERBOSITY = os.environ.get("OPENAI_CUSTOMER_QA_VERBOSITY", "medium")
+
+RAG_TOP_K = int(os.environ.get("RAG_TOP_K", "8"))
+RAG_MAX_CONTEXT_TOKENS = int(os.environ.get("RAG_MAX_CONTEXT_TOKENS", "6000"))
+RAG_MIN_SIMILARITY = float(os.environ.get("RAG_MIN_SIMILARITY", "0.72"))
+RAG_CHUNK_TOKENS = int(os.environ.get("RAG_CHUNK_TOKENS", "700"))
+RAG_CHUNK_OVERLAP_TOKENS = int(os.environ.get("RAG_CHUNK_OVERLAP_TOKENS", "100"))
+RAG_MAX_UPLOAD_MB = int(os.environ.get("RAG_MAX_UPLOAD_MB", "10"))
+RAG_ALLOWED_MIME_TYPES = [
+    value
+    for value in os.environ.get(
+        "RAG_ALLOWED_MIME_TYPES",
+        ",".join(
+            [
+                "text/plain",
+                "text/markdown",
+                "text/csv",
+                "application/csv",
+                "application/pdf",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                "application/vnd.ms-excel",
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            ]
+        ),
+    ).split(",")
+    if value
+]
+RAG_ENABLE_IMAGE_OCR = os.environ.get("RAG_ENABLE_IMAGE_OCR", "False").lower() == "true"

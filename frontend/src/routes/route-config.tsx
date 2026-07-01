@@ -25,6 +25,7 @@ const ProviderInProgressPage = lazy(() => import("@/pages/provider/ProviderInPro
 const ProviderEarningsPage = lazy(() => import("@/pages/provider/ProviderEarningsPage"));
 const ProviderProfileSettingsPage = lazy(() => import("@/pages/provider/ProviderProfilePage"));
 const ProviderVerificationPage = lazy(() => import("@/pages/provider/ProviderVerificationPage"));
+const ProviderKnowledgePage = lazy(() => import("@/pages/provider/ProviderKnowledgePage"));
 const AdminDashboardPage = lazy(() => import("@/pages/admin/AdminDashboardPage"));
 const AdminVerificationPage = lazy(() => import("@/pages/admin/AdminVerificationPage"));
 const AdminAnalyticsPage = lazy(() => import("@/pages/admin/AdminAnalyticsPage"));
@@ -61,6 +62,7 @@ export const appRoutes: AppRouteConfig[] = [
   { path: "/provider/earnings", element: <ProviderEarningsPage />, requiresAuth: true, roles: ["provider"] },
   { path: "/provider/profile", element: <ProviderProfileSettingsPage />, requiresAuth: true, roles: ["provider"] },
   { path: "/provider/verification", element: <ProviderVerificationPage />, requiresAuth: true, roles: ["provider"] },
+  { path: "/provider/knowledge", element: <ProviderKnowledgePage />, requiresAuth: true, roles: ["provider"] },
   { path: "/admin/dashboard", element: <AdminDashboardPage />, requiresAuth: true, roles: ["admin"] },
   { path: "/admin/verification", element: <AdminVerificationPage />, requiresAuth: true, roles: ["admin"] },
   { path: "/admin/analytics", element: <AdminAnalyticsPage />, requiresAuth: true, roles: ["admin"] },

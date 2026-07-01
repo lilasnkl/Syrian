@@ -13,6 +13,7 @@ import { useAuthStore } from '@/stores/auth-store';
 import { useSkeletonLoading } from '@/hooks/use-skeleton-loading';
 import { CardSkeleton, StatCardSkeleton } from '@/components/PageSkeleton';
 import { Skeleton } from '@/components/ui/skeleton';
+import { CustomerAssistantPanel } from '@/components/CustomerAssistantPanel';
 import { MapPin, CheckCircle2, Clock, Briefcase, MessageSquare, Star } from 'lucide-react';
 
 const ProviderProfilePage = () => {
@@ -110,6 +111,7 @@ const ProviderProfilePage = () => {
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
+            {!isOwnProfile && <CustomerAssistantPanel providerId={provider.id} />}
             <Card className="border-border bg-card">
               <CardContent className="p-6">
                 <h3 className="font-display font-semibold text-lg text-foreground mb-3">{t('provider.about')}</h3>
