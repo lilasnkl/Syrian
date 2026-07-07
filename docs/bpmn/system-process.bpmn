@@ -1,0 +1,1315 @@
+<?xml version='1.0' encoding='utf-8'?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_SyrianServicesMarketplace" targetNamespace="https://syrian-services.local/bpmn">
+  <bpmn:message id="Message_ServiceRequest" name="Service request" />
+  <bpmn:message id="Message_ProviderOffer" name="Provider offer" />
+  <bpmn:message id="Message_BidDecision" name="Bid decision" />
+  <bpmn:message id="Message_Completion" name="Completion update" />
+  <bpmn:message id="Message_Complaint" name="Complaint" />
+  <bpmn:message id="Message_VerificationEvidence" name="Verification evidence" />
+  <bpmn:message id="Message_VerificationResult" name="Verification result" />
+  <bpmn:message id="Message_KnowledgeQuestion" name="Knowledge question" />
+  <bpmn:message id="Message_AiRequest" name="AI request" />
+  <bpmn:message id="Message_Notification" name="Notification" />
+  <bpmn:process id="Process_Customer" name="Customer marketplace journey" isExecutable="false">
+    <bpmn:startEvent id="Start_CustomerNeed" name="Service need identified" />
+    <bpmn:userTask id="Task_CustomerSignIn" name="Register or sign in" />
+    <bpmn:userTask id="Task_CustomerDiscover" name="Search providers, services, or ask AI recommendation" />
+    <bpmn:userTask id="Task_CustomerAskRag" name="Ask provider knowledge question" />
+    <bpmn:userTask id="Task_CustomerSubmitRequest" name="Submit service request" />
+    <bpmn:userTask id="Task_CustomerReviewOffers" name="Review provider offers" />
+    <bpmn:exclusiveGateway id="Gateway_CustomerDecision" name="Accept an offer?" />
+    <bpmn:userTask id="Task_CustomerAcceptOffer" name="Accept selected offer" />
+    <bpmn:userTask id="Task_CustomerRejectCancel" name="Reject offers or cancel request" />
+    <bpmn:userTask id="Task_CustomerChatTrack" name="Chat and track in-progress work" />
+    <bpmn:exclusiveGateway id="Gateway_CustomerOutcome" name="Was work acceptable?" />
+    <bpmn:userTask id="Task_CustomerCreateComplaint" name="Submit complaint" />
+    <bpmn:userTask id="Task_CustomerCreateReview" name="Create completed-order review" />
+    <bpmn:endEvent id="End_CustomerCompleted" name="Service completed and reviewed" />
+    <bpmn:endEvent id="End_CustomerCancelled" name="Request cancelled or no offer accepted" />
+    <bpmn:endEvent id="End_CustomerDisputed" name="Complaint submitted" />
+    <bpmn:sequenceFlow id="Flow_Customer_01" sourceRef="Start_CustomerNeed" targetRef="Task_CustomerSignIn" />
+    <bpmn:sequenceFlow id="Flow_Customer_02" sourceRef="Task_CustomerSignIn" targetRef="Task_CustomerDiscover" />
+    <bpmn:sequenceFlow id="Flow_Customer_03" sourceRef="Task_CustomerDiscover" targetRef="Task_CustomerAskRag" name="needs provider facts" />
+    <bpmn:sequenceFlow id="Flow_Customer_04" sourceRef="Task_CustomerAskRag" targetRef="Task_CustomerSubmitRequest" />
+    <bpmn:sequenceFlow id="Flow_Customer_05" sourceRef="Task_CustomerSubmitRequest" targetRef="Task_CustomerReviewOffers" />
+    <bpmn:sequenceFlow id="Flow_Customer_06" sourceRef="Task_CustomerReviewOffers" targetRef="Gateway_CustomerDecision" />
+    <bpmn:sequenceFlow id="Flow_Customer_07" sourceRef="Gateway_CustomerDecision" targetRef="Task_CustomerAcceptOffer" name="yes" />
+    <bpmn:sequenceFlow id="Flow_Customer_08" sourceRef="Gateway_CustomerDecision" targetRef="Task_CustomerRejectCancel" name="no" />
+    <bpmn:sequenceFlow id="Flow_Customer_09" sourceRef="Task_CustomerRejectCancel" targetRef="End_CustomerCancelled" />
+    <bpmn:sequenceFlow id="Flow_Customer_10" sourceRef="Task_CustomerAcceptOffer" targetRef="Task_CustomerChatTrack" />
+    <bpmn:sequenceFlow id="Flow_Customer_11" sourceRef="Task_CustomerChatTrack" targetRef="Gateway_CustomerOutcome" />
+    <bpmn:sequenceFlow id="Flow_Customer_12" sourceRef="Gateway_CustomerOutcome" targetRef="Task_CustomerCreateReview" name="completed" />
+    <bpmn:sequenceFlow id="Flow_Customer_13" sourceRef="Gateway_CustomerOutcome" targetRef="Task_CustomerCreateComplaint" name="disputed" />
+    <bpmn:sequenceFlow id="Flow_Customer_14" sourceRef="Task_CustomerCreateComplaint" targetRef="End_CustomerDisputed" />
+    <bpmn:sequenceFlow id="Flow_Customer_15" sourceRef="Task_CustomerCreateReview" targetRef="End_CustomerCompleted" />
+  </bpmn:process>
+  <bpmn:process id="Process_Provider" name="Provider marketplace journey" isExecutable="false">
+    <bpmn:startEvent id="Start_ProviderJoin" name="Provider joins marketplace" />
+    <bpmn:userTask id="Task_ProviderSignIn" name="Register or sign in as provider" />
+    <bpmn:userTask id="Task_ProviderSubmitVerification" name="Submit verification evidence" />
+    <bpmn:intermediateCatchEvent id="Event_ProviderVerificationResult" name="Verification result received">
+      <bpmn:messageEventDefinition messageRef="Message_VerificationResult" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:exclusiveGateway id="Gateway_ProviderVerified" name="Was provider verified?" />
+    <bpmn:userTask id="Task_ProviderManageProfileServices" name="Manage profile and service listings" />
+    <bpmn:userTask id="Task_ProviderUploadKnowledge" name="Upload provider knowledge source" />
+    <bpmn:intermediateCatchEvent id="Event_ProviderRequestAvailable" name="Eligible request available">
+      <bpmn:messageEventDefinition messageRef="Message_Notification" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:userTask id="Task_ProviderSubmitBid" name="Submit offer" />
+    <bpmn:exclusiveGateway id="Gateway_ProviderBidAccepted" name="Was offer accepted?" />
+    <bpmn:userTask id="Task_ProviderPerformWork" name="Perform accepted service" />
+    <bpmn:userTask id="Task_ProviderMarkCompleted" name="Mark order completed" />
+    <bpmn:endEvent id="End_ProviderJobCompleted" name="Provider job completed" />
+    <bpmn:endEvent id="End_ProviderVerificationRejected" name="Verification rejected or revoked" />
+    <bpmn:endEvent id="End_ProviderOfferRejected" name="Offer rejected or withdrawn" />
+    <bpmn:sequenceFlow id="Flow_Provider_01" sourceRef="Start_ProviderJoin" targetRef="Task_ProviderSignIn" />
+    <bpmn:sequenceFlow id="Flow_Provider_02" sourceRef="Task_ProviderSignIn" targetRef="Task_ProviderSubmitVerification" />
+    <bpmn:sequenceFlow id="Flow_Provider_03" sourceRef="Task_ProviderSubmitVerification" targetRef="Event_ProviderVerificationResult" />
+    <bpmn:sequenceFlow id="Flow_Provider_04" sourceRef="Event_ProviderVerificationResult" targetRef="Gateway_ProviderVerified" />
+    <bpmn:sequenceFlow id="Flow_Provider_05" sourceRef="Gateway_ProviderVerified" targetRef="Task_ProviderManageProfileServices" name="approved" />
+    <bpmn:sequenceFlow id="Flow_Provider_06" sourceRef="Gateway_ProviderVerified" targetRef="End_ProviderVerificationRejected" name="rejected/revoked" />
+    <bpmn:sequenceFlow id="Flow_Provider_07" sourceRef="Task_ProviderManageProfileServices" targetRef="Task_ProviderUploadKnowledge" />
+    <bpmn:sequenceFlow id="Flow_Provider_08" sourceRef="Task_ProviderUploadKnowledge" targetRef="Event_ProviderRequestAvailable" />
+    <bpmn:sequenceFlow id="Flow_Provider_09" sourceRef="Event_ProviderRequestAvailable" targetRef="Task_ProviderSubmitBid" />
+    <bpmn:sequenceFlow id="Flow_Provider_10" sourceRef="Task_ProviderSubmitBid" targetRef="Gateway_ProviderBidAccepted" />
+    <bpmn:sequenceFlow id="Flow_Provider_11" sourceRef="Gateway_ProviderBidAccepted" targetRef="Task_ProviderPerformWork" name="accepted" />
+    <bpmn:sequenceFlow id="Flow_Provider_12" sourceRef="Gateway_ProviderBidAccepted" targetRef="End_ProviderOfferRejected" name="not accepted" />
+    <bpmn:sequenceFlow id="Flow_Provider_13" sourceRef="Task_ProviderPerformWork" targetRef="Task_ProviderMarkCompleted" />
+    <bpmn:sequenceFlow id="Flow_Provider_14" sourceRef="Task_ProviderMarkCompleted" targetRef="End_ProviderJobCompleted" />
+  </bpmn:process>
+  <bpmn:process id="Process_Admin" name="Admin and moderator operations" isExecutable="false">
+    <bpmn:startEvent id="Start_AdminQueue" name="Admin queue notification received" />
+    <bpmn:userTask id="Task_AdminViewDashboard" name="Review dashboard metrics and queues" />
+    <bpmn:userTask id="Task_AdminReviewVerification" name="Approve, reject, or revoke verification" />
+    <bpmn:exclusiveGateway id="Gateway_AdminApproveVerification" name="Approve provider?" />
+    <bpmn:userTask id="Task_AdminApproveProvider" name="Approve provider verification" />
+    <bpmn:userTask id="Task_AdminRejectProvider" name="Reject or revoke verification" />
+    <bpmn:userTask id="Task_AdminHandleComplaint" name="Respond to complaint" />
+    <bpmn:userTask id="Task_AdminModerateAccount" name="Block account or record moderation action" />
+    <bpmn:endEvent id="End_AdminQueuesHandled" name="Admin queue handled" />
+    <bpmn:sequenceFlow id="Flow_Admin_01" sourceRef="Start_AdminQueue" targetRef="Task_AdminViewDashboard" />
+    <bpmn:sequenceFlow id="Flow_Admin_02" sourceRef="Task_AdminViewDashboard" targetRef="Task_AdminReviewVerification" />
+    <bpmn:sequenceFlow id="Flow_Admin_03" sourceRef="Task_AdminReviewVerification" targetRef="Gateway_AdminApproveVerification" />
+    <bpmn:sequenceFlow id="Flow_Admin_04" sourceRef="Gateway_AdminApproveVerification" targetRef="Task_AdminApproveProvider" name="yes" />
+    <bpmn:sequenceFlow id="Flow_Admin_05" sourceRef="Gateway_AdminApproveVerification" targetRef="Task_AdminRejectProvider" name="no/revoke" />
+    <bpmn:sequenceFlow id="Flow_Admin_06" sourceRef="Task_AdminApproveProvider" targetRef="Task_AdminHandleComplaint" />
+    <bpmn:sequenceFlow id="Flow_Admin_07" sourceRef="Task_AdminRejectProvider" targetRef="Task_AdminHandleComplaint" />
+    <bpmn:sequenceFlow id="Flow_Admin_08" sourceRef="Task_AdminHandleComplaint" targetRef="Task_AdminModerateAccount" />
+    <bpmn:sequenceFlow id="Flow_Admin_09" sourceRef="Task_AdminModerateAccount" targetRef="End_AdminQueuesHandled" />
+  </bpmn:process>
+  <bpmn:process id="Process_Platform" name="Syrian Services platform orchestration" isExecutable="false">
+    <bpmn:laneSet id="LaneSet_Process_Platform">
+      <bpmn:lane id="Lane_Platform_Frontend" name="React Frontend">
+        <bpmn:flowNodeRef>Start_PlatformRequestReceived</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_PlatformRouteFrontend</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Platform_AuthApi" name="Django API and Auth">
+        <bpmn:flowNodeRef>Sub_Auth</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_PlatformAuth</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>End_PlatformAuthFailed</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Platform_Domain" name="Domain Services">
+        <bpmn:flowNodeRef>Sub_ProviderReadiness</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_PlatformProviderApproved</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>End_PlatformProviderRejected</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Sub_Discovery</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Sub_KnowledgeRag</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Sub_OrderSubmission</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_PlatformRequestValid</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>End_PlatformValidationFailed</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Sub_BidWorkflow</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_PlatformOfferAccepted</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>End_PlatformNoOffer</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Sub_FulfillmentChat</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_PlatformFulfillmentOutcome</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Sub_ReviewRating</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_EarningsAnalytics</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Sub_ComplaintModeration</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>End_PlatformCompleted</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>End_PlatformCancelled</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>End_PlatformDisputed</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Platform_Worker" name="Notifications and Background Jobs">
+        <bpmn:flowNodeRef>Sub_NotificationsAudit</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Platform_Data" name="Persistence, Files, Vector Index, Cache" />
+    </bpmn:laneSet>
+    <bpmn:startEvent id="Start_PlatformRequestReceived" name="Marketplace request received" />
+    <bpmn:serviceTask id="Task_PlatformRouteFrontend" name="Route action through React SPA" />
+    <bpmn:subProcess id="Sub_Auth" name="Authenticate session and check active account" triggeredByEvent="false">
+      <bpmn:startEvent id="Start_SubAuth" name="Protected action requested" />
+      <bpmn:serviceTask id="Task_AuthReadCookies" name="Read HttpOnly JWT cookies and CSRF token" />
+      <bpmn:serviceTask id="Task_AuthValidateJwt" name="Validate JWT and refresh token if requested" />
+      <bpmn:serviceTask id="Task_AuthLoadUser" name="Load user role and account status" />
+      <bpmn:exclusiveGateway id="Gateway_AuthActive" name="Is user authenticated and active?" />
+      <bpmn:endEvent id="End_SubAuthOk" name="Authorization passed" />
+      <bpmn:endEvent id="End_SubAuthFailed" name="Authentication, permission, or blocked-account error" />
+      <bpmn:sequenceFlow id="Flow_SubAuth_01" sourceRef="Start_SubAuth" targetRef="Task_AuthReadCookies" />
+      <bpmn:sequenceFlow id="Flow_SubAuth_02" sourceRef="Task_AuthReadCookies" targetRef="Task_AuthValidateJwt" />
+      <bpmn:sequenceFlow id="Flow_SubAuth_03" sourceRef="Task_AuthValidateJwt" targetRef="Task_AuthLoadUser" />
+      <bpmn:sequenceFlow id="Flow_SubAuth_04" sourceRef="Task_AuthLoadUser" targetRef="Gateway_AuthActive" />
+      <bpmn:sequenceFlow id="Flow_SubAuth_05" sourceRef="Gateway_AuthActive" targetRef="End_SubAuthOk" name="yes" />
+      <bpmn:sequenceFlow id="Flow_SubAuth_06" sourceRef="Gateway_AuthActive" targetRef="End_SubAuthFailed" name="no" />
+    </bpmn:subProcess>
+    <bpmn:exclusiveGateway id="Gateway_PlatformAuth" name="Is actor authorized?" />
+    <bpmn:endEvent id="End_PlatformAuthFailed" name="Authentication or account status failed" />
+    <bpmn:subProcess id="Sub_ProviderReadiness" name="Verify provider and publish services" triggeredByEvent="false">
+      <bpmn:startEvent id="Start_SubProviderReady" name="Provider readiness requested" />
+      <bpmn:serviceTask id="Task_ProviderValidateRole" name="Validate provider role and active account" />
+      <bpmn:receiveTask id="Task_ProviderReceiveEvidence" name="Receive verification documents and files" />
+      <bpmn:serviceTask id="Task_ProviderStoreVerification" name="Store files and create verification request" />
+      <bpmn:serviceTask id="Task_ProviderNotifyAdmins" name="Notify admins and moderators" />
+      <bpmn:userTask id="Task_ProviderAdminReview" name="Review submitted verification evidence" />
+      <bpmn:exclusiveGateway id="Gateway_ProviderApproval" name="Approve verification?" />
+      <bpmn:serviceTask id="Task_ProviderSetVerified" name="Set provider as verified" />
+      <bpmn:serviceTask id="Task_ProviderRejectOrRevoke" name="Reject or revoke verification with reason" />
+      <bpmn:serviceTask id="Task_ProviderPublishServices" name="Allow provider profile, services, and earnings access" />
+      <bpmn:endEvent id="End_SubProviderReady" name="Provider ready" />
+      <bpmn:endEvent id="End_SubProviderRejected" name="Provider verification rejected or revoked" />
+      <bpmn:sequenceFlow id="Flow_SubProvider_01" sourceRef="Start_SubProviderReady" targetRef="Task_ProviderValidateRole" />
+      <bpmn:sequenceFlow id="Flow_SubProvider_02" sourceRef="Task_ProviderValidateRole" targetRef="Task_ProviderReceiveEvidence" />
+      <bpmn:sequenceFlow id="Flow_SubProvider_03" sourceRef="Task_ProviderReceiveEvidence" targetRef="Task_ProviderStoreVerification" />
+      <bpmn:sequenceFlow id="Flow_SubProvider_04" sourceRef="Task_ProviderStoreVerification" targetRef="Task_ProviderNotifyAdmins" />
+      <bpmn:sequenceFlow id="Flow_SubProvider_05" sourceRef="Task_ProviderNotifyAdmins" targetRef="Task_ProviderAdminReview" />
+      <bpmn:sequenceFlow id="Flow_SubProvider_06" sourceRef="Task_ProviderAdminReview" targetRef="Gateway_ProviderApproval" />
+      <bpmn:sequenceFlow id="Flow_SubProvider_07" sourceRef="Gateway_ProviderApproval" targetRef="Task_ProviderSetVerified" name="yes" />
+      <bpmn:sequenceFlow id="Flow_SubProvider_08" sourceRef="Gateway_ProviderApproval" targetRef="Task_ProviderRejectOrRevoke" name="no/revoke" />
+      <bpmn:sequenceFlow id="Flow_SubProvider_09" sourceRef="Task_ProviderSetVerified" targetRef="Task_ProviderPublishServices" />
+      <bpmn:sequenceFlow id="Flow_SubProvider_10" sourceRef="Task_ProviderPublishServices" targetRef="End_SubProviderReady" />
+      <bpmn:sequenceFlow id="Flow_SubProvider_11" sourceRef="Task_ProviderRejectOrRevoke" targetRef="End_SubProviderRejected" />
+    </bpmn:subProcess>
+    <bpmn:exclusiveGateway id="Gateway_PlatformProviderApproved" name="Is provider approved or not required?" />
+    <bpmn:endEvent id="End_PlatformProviderRejected" name="Provider cannot publish verified work" />
+    <bpmn:subProcess id="Sub_Discovery" name="Support discovery and AI recommendation" triggeredByEvent="false">
+      <bpmn:startEvent id="Start_SubDiscovery" name="Customer discovery requested" />
+      <bpmn:serviceTask id="Task_DiscoveryListProviders" name="List and filter providers and active services" />
+      <bpmn:serviceTask id="Task_DiscoveryAnalyzeProblem" name="Call Ollama problem analysis" />
+      <bpmn:scriptTask id="Task_DiscoveryNormalizeRank" name="Normalize analysis and rank matching providers" />
+      <bpmn:endEvent id="End_SubDiscovery" name="Discovery results returned" />
+      <bpmn:endEvent id="End_SubDiscoveryExternalFailed" name="AI recommendation unavailable" />
+      <bpmn:sequenceFlow id="Flow_SubDiscovery_01" sourceRef="Start_SubDiscovery" targetRef="Task_DiscoveryListProviders" />
+      <bpmn:sequenceFlow id="Flow_SubDiscovery_02" sourceRef="Task_DiscoveryListProviders" targetRef="Task_DiscoveryAnalyzeProblem" name="AI recommendation requested" />
+      <bpmn:sequenceFlow id="Flow_SubDiscovery_03" sourceRef="Task_DiscoveryAnalyzeProblem" targetRef="Task_DiscoveryNormalizeRank" name="valid model output" />
+      <bpmn:sequenceFlow id="Flow_SubDiscovery_04" sourceRef="Task_DiscoveryNormalizeRank" targetRef="End_SubDiscovery" />
+      <bpmn:sequenceFlow id="Flow_SubDiscovery_05" sourceRef="Task_DiscoveryAnalyzeProblem" targetRef="End_SubDiscoveryExternalFailed" name="Ollama unavailable or invalid after retry" />
+    </bpmn:subProcess>
+    <bpmn:subProcess id="Sub_KnowledgeRag" name="Answer provider knowledge question" triggeredByEvent="false">
+      <bpmn:startEvent id="Start_SubKnowledge" name="Knowledge or assistant action received" />
+      <bpmn:exclusiveGateway id="Gateway_KnowledgeAction" name="Upload source or ask question?" />
+      <bpmn:serviceTask id="Task_KnowledgeValidateUpload" name="Validate provider, visibility, file type, and size" />
+      <bpmn:serviceTask id="Task_KnowledgeStoreSource" name="Store source file and queue ingestion job" />
+      <bpmn:serviceTask id="Task_KnowledgeExtractText" name="Extract and normalize text" />
+      <bpmn:scriptTask id="Task_KnowledgeChunkText" name="Create semantic chunks" />
+      <bpmn:serviceTask id="Task_KnowledgeEmbedChunks" name="Call OpenAI embeddings" />
+      <bpmn:serviceTask id="Task_KnowledgeActivateChunks" name="Activate chunks and sync vector index" />
+      <bpmn:endEvent id="End_KnowledgeActive" name="Knowledge source active" />
+      <bpmn:serviceTask id="Task_RagValidateQuestion" name="Validate customer, provider, service, and order scope" />
+      <bpmn:serviceTask id="Task_RagRetrieveEvidence" name="Retrieve authorized chunks by visibility policy" />
+      <bpmn:exclusiveGateway id="Gateway_RagEvidence" name="Is relevant evidence available?" />
+      <bpmn:serviceTask id="Task_RagCallOpenAI" name="Call OpenAI Responses API for grounded answer" />
+      <bpmn:scriptTask id="Task_RagValidateOutput" name="Validate structured output and citations" />
+      <bpmn:serviceTask id="Task_RagPersistTurn" name="Persist assistant turn, usage, and citations" />
+      <bpmn:endEvent id="End_RagAnswered" name="Grounded answer returned" />
+      <bpmn:endEvent id="End_RagInsufficient" name="Insufficient evidence returned" />
+      <bpmn:endEvent id="End_KnowledgeFailed" name="Knowledge or AI processing failed" />
+      <bpmn:boundaryEvent id="Boundary_KnowledgeEmbeddingFailed" name="OpenAI embedding failed" attachedToRef="Task_KnowledgeEmbedChunks" cancelActivity="true">
+        <bpmn:errorEventDefinition />
+      </bpmn:boundaryEvent>
+      <bpmn:boundaryEvent id="Boundary_RagAnswerFailed" name="OpenAI answer failed" attachedToRef="Task_RagCallOpenAI" cancelActivity="true">
+        <bpmn:errorEventDefinition />
+      </bpmn:boundaryEvent>
+      <bpmn:sequenceFlow id="Flow_SubKnowledge_01" sourceRef="Start_SubKnowledge" targetRef="Gateway_KnowledgeAction" />
+      <bpmn:sequenceFlow id="Flow_SubKnowledge_02" sourceRef="Gateway_KnowledgeAction" targetRef="Task_KnowledgeValidateUpload" name="provider upload" />
+      <bpmn:sequenceFlow id="Flow_SubKnowledge_03" sourceRef="Task_KnowledgeValidateUpload" targetRef="Task_KnowledgeStoreSource" />
+      <bpmn:sequenceFlow id="Flow_SubKnowledge_04" sourceRef="Task_KnowledgeStoreSource" targetRef="Task_KnowledgeExtractText" name="worker or process-now" />
+      <bpmn:sequenceFlow id="Flow_SubKnowledge_05" sourceRef="Task_KnowledgeExtractText" targetRef="Task_KnowledgeChunkText" />
+      <bpmn:sequenceFlow id="Flow_SubKnowledge_06" sourceRef="Task_KnowledgeChunkText" targetRef="Task_KnowledgeEmbedChunks" />
+      <bpmn:sequenceFlow id="Flow_SubKnowledge_07" sourceRef="Task_KnowledgeEmbedChunks" targetRef="Task_KnowledgeActivateChunks" />
+      <bpmn:sequenceFlow id="Flow_SubKnowledge_08" sourceRef="Task_KnowledgeActivateChunks" targetRef="End_KnowledgeActive" />
+      <bpmn:sequenceFlow id="Flow_SubKnowledge_09" sourceRef="Gateway_KnowledgeAction" targetRef="Task_RagValidateQuestion" name="customer question" />
+      <bpmn:sequenceFlow id="Flow_SubKnowledge_10" sourceRef="Task_RagValidateQuestion" targetRef="Task_RagRetrieveEvidence" />
+      <bpmn:sequenceFlow id="Flow_SubKnowledge_11" sourceRef="Task_RagRetrieveEvidence" targetRef="Gateway_RagEvidence" />
+      <bpmn:sequenceFlow id="Flow_SubKnowledge_12" sourceRef="Gateway_RagEvidence" targetRef="End_RagInsufficient" name="no" />
+      <bpmn:sequenceFlow id="Flow_SubKnowledge_13" sourceRef="Gateway_RagEvidence" targetRef="Task_RagCallOpenAI" name="yes" />
+      <bpmn:sequenceFlow id="Flow_SubKnowledge_14" sourceRef="Task_RagCallOpenAI" targetRef="Task_RagValidateOutput" />
+      <bpmn:sequenceFlow id="Flow_SubKnowledge_15" sourceRef="Task_RagValidateOutput" targetRef="Task_RagPersistTurn" />
+      <bpmn:sequenceFlow id="Flow_SubKnowledge_16" sourceRef="Task_RagPersistTurn" targetRef="End_RagAnswered" />
+      <bpmn:sequenceFlow id="Flow_SubKnowledge_17" sourceRef="Boundary_KnowledgeEmbeddingFailed" targetRef="End_KnowledgeFailed" />
+      <bpmn:sequenceFlow id="Flow_SubKnowledge_18" sourceRef="Boundary_RagAnswerFailed" targetRef="End_KnowledgeFailed" />
+    </bpmn:subProcess>
+    <bpmn:subProcess id="Sub_OrderSubmission" name="Create customer service request" triggeredByEvent="false">
+      <bpmn:startEvent id="Start_SubOrder" name="Order submission received" />
+      <bpmn:serviceTask id="Task_OrderValidateCustomer" name="Validate customer role and required fields" />
+      <bpmn:serviceTask id="Task_OrderValidateService" name="Validate selected service is active and category matches" />
+      <bpmn:exclusiveGateway id="Gateway_OrderValid" name="Is order valid?" />
+      <bpmn:serviceTask id="Task_OrderCreateOpen" name="Create open order record" />
+      <bpmn:exclusiveGateway id="Gateway_OrderTargeted" name="Is request service-targeted?" />
+      <bpmn:serviceTask id="Task_OrderNotifySelectedProvider" name="Notify selected provider" />
+      <bpmn:serviceTask id="Task_OrderExposeToMatchingProviders" name="Expose open request to matching providers" />
+      <bpmn:endEvent id="End_SubOrderCreated" name="Order created" />
+      <bpmn:endEvent id="End_SubOrderInvalid" name="Validation or permission error" />
+      <bpmn:sequenceFlow id="Flow_SubOrder_01" sourceRef="Start_SubOrder" targetRef="Task_OrderValidateCustomer" />
+      <bpmn:sequenceFlow id="Flow_SubOrder_02" sourceRef="Task_OrderValidateCustomer" targetRef="Task_OrderValidateService" />
+      <bpmn:sequenceFlow id="Flow_SubOrder_03" sourceRef="Task_OrderValidateService" targetRef="Gateway_OrderValid" />
+      <bpmn:sequenceFlow id="Flow_SubOrder_04" sourceRef="Gateway_OrderValid" targetRef="End_SubOrderInvalid" name="no" />
+      <bpmn:sequenceFlow id="Flow_SubOrder_05" sourceRef="Gateway_OrderValid" targetRef="Task_OrderCreateOpen" name="yes" />
+      <bpmn:sequenceFlow id="Flow_SubOrder_06" sourceRef="Task_OrderCreateOpen" targetRef="Gateway_OrderTargeted" />
+      <bpmn:sequenceFlow id="Flow_SubOrder_07" sourceRef="Gateway_OrderTargeted" targetRef="Task_OrderNotifySelectedProvider" name="yes" />
+      <bpmn:sequenceFlow id="Flow_SubOrder_08" sourceRef="Gateway_OrderTargeted" targetRef="Task_OrderExposeToMatchingProviders" name="no" />
+      <bpmn:sequenceFlow id="Flow_SubOrder_09" sourceRef="Task_OrderNotifySelectedProvider" targetRef="End_SubOrderCreated" />
+      <bpmn:sequenceFlow id="Flow_SubOrder_10" sourceRef="Task_OrderExposeToMatchingProviders" targetRef="End_SubOrderCreated" />
+    </bpmn:subProcess>
+    <bpmn:exclusiveGateway id="Gateway_PlatformRequestValid" name="Is request valid and visible?" />
+    <bpmn:endEvent id="End_PlatformValidationFailed" name="Request validation failed" />
+    <bpmn:subProcess id="Sub_BidWorkflow" name="Manage provider offers and selection" triggeredByEvent="false">
+      <bpmn:startEvent id="Start_SubBid" name="Bid action received" />
+      <bpmn:serviceTask id="Task_BidValidateProvider" name="Validate provider profile, category, open order, and duplicate bid" />
+      <bpmn:exclusiveGateway id="Gateway_BidEligible" name="Is provider eligible to bid?" />
+      <bpmn:serviceTask id="Task_BidCreate" name="Create pending bid and notify customer" />
+      <bpmn:receiveTask id="Task_BidReceiveDecision" name="Receive customer or moderator bid decision" />
+      <bpmn:exclusiveGateway id="Gateway_BidDecision" name="Accept offer?" />
+      <bpmn:serviceTask id="Task_BidAccept" name="Accept selected bid and reject competing pending bids" />
+      <bpmn:serviceTask id="Task_BidRejectWithdraw" name="Reject or withdraw pending bid" />
+      <bpmn:serviceTask id="Task_BidSyncOrder" name="Sync order status and awarded provider" />
+      <bpmn:exclusiveGateway id="Gateway_BidPendingRemain" name="Any pending offers remain?" />
+      <bpmn:endEvent id="End_SubBidAccepted" name="Order moved to in progress" />
+      <bpmn:endEvent id="End_SubBidStillOpen" name="Order remains open" />
+      <bpmn:endEvent id="End_SubBidCancelled" name="Order cancelled" />
+      <bpmn:endEvent id="End_SubBidInvalid" name="Bid rejected by validation" />
+      <bpmn:sequenceFlow id="Flow_SubBid_01" sourceRef="Start_SubBid" targetRef="Task_BidValidateProvider" />
+      <bpmn:sequenceFlow id="Flow_SubBid_02" sourceRef="Task_BidValidateProvider" targetRef="Gateway_BidEligible" />
+      <bpmn:sequenceFlow id="Flow_SubBid_03" sourceRef="Gateway_BidEligible" targetRef="End_SubBidInvalid" name="no" />
+      <bpmn:sequenceFlow id="Flow_SubBid_04" sourceRef="Gateway_BidEligible" targetRef="Task_BidCreate" name="yes" />
+      <bpmn:sequenceFlow id="Flow_SubBid_05" sourceRef="Task_BidCreate" targetRef="Task_BidReceiveDecision" />
+      <bpmn:sequenceFlow id="Flow_SubBid_06" sourceRef="Task_BidReceiveDecision" targetRef="Gateway_BidDecision" />
+      <bpmn:sequenceFlow id="Flow_SubBid_07" sourceRef="Gateway_BidDecision" targetRef="Task_BidAccept" name="yes" />
+      <bpmn:sequenceFlow id="Flow_SubBid_08" sourceRef="Gateway_BidDecision" targetRef="Task_BidRejectWithdraw" name="no" />
+      <bpmn:sequenceFlow id="Flow_SubBid_09" sourceRef="Task_BidAccept" targetRef="Task_BidSyncOrder" />
+      <bpmn:sequenceFlow id="Flow_SubBid_10" sourceRef="Task_BidRejectWithdraw" targetRef="Task_BidSyncOrder" />
+      <bpmn:sequenceFlow id="Flow_SubBid_11" sourceRef="Task_BidSyncOrder" targetRef="Gateway_BidPendingRemain" />
+      <bpmn:sequenceFlow id="Flow_SubBid_12" sourceRef="Gateway_BidPendingRemain" targetRef="End_SubBidAccepted" name="accepted bid exists" />
+      <bpmn:sequenceFlow id="Flow_SubBid_13" sourceRef="Gateway_BidPendingRemain" targetRef="End_SubBidStillOpen" name="pending offers remain" />
+      <bpmn:sequenceFlow id="Flow_SubBid_14" sourceRef="Gateway_BidPendingRemain" targetRef="End_SubBidCancelled" name="only rejected offers" />
+    </bpmn:subProcess>
+    <bpmn:subProcess id="Sub_NotificationsAudit" name="Create notifications and status history" triggeredByEvent="false">
+      <bpmn:startEvent id="Start_SubNotify" name="Domain event emitted" />
+      <bpmn:serviceTask id="Task_NotifyCreate" name="Create in-app notification record" />
+      <bpmn:serviceTask id="Task_NotifyHistory" name="Write bid, order, or complaint history" />
+      <bpmn:serviceTask id="Task_NotifyFilterVisible" name="Filter visible notifications by role" />
+      <bpmn:endEvent id="End_SubNotify" name="Notification and history available" />
+      <bpmn:sequenceFlow id="Flow_SubNotify_01" sourceRef="Start_SubNotify" targetRef="Task_NotifyCreate" />
+      <bpmn:sequenceFlow id="Flow_SubNotify_02" sourceRef="Task_NotifyCreate" targetRef="Task_NotifyHistory" />
+      <bpmn:sequenceFlow id="Flow_SubNotify_03" sourceRef="Task_NotifyHistory" targetRef="Task_NotifyFilterVisible" />
+      <bpmn:sequenceFlow id="Flow_SubNotify_04" sourceRef="Task_NotifyFilterVisible" targetRef="End_SubNotify" />
+    </bpmn:subProcess>
+    <bpmn:exclusiveGateway id="Gateway_PlatformOfferAccepted" name="Was an offer accepted?" />
+    <bpmn:endEvent id="End_PlatformNoOffer" name="Request cancelled or left open" />
+    <bpmn:subProcess id="Sub_FulfillmentChat" name="Coordinate work and chat" triggeredByEvent="false">
+      <bpmn:startEvent id="Start_SubFulfillment" name="Accepted order in progress" />
+      <bpmn:serviceTask id="Task_ChatCreateConversation" name="Create or reuse customer-provider conversation" />
+      <bpmn:userTask id="Task_ChatExchangeMessages" name="Exchange messages during work" />
+      <bpmn:serviceTask id="Task_OrderCompleteCancelDispute" name="Apply completion, cancellation, or dispute transition" />
+      <bpmn:exclusiveGateway id="Gateway_FulfillmentOutcome" name="Which final state?" />
+      <bpmn:endEvent id="End_FulfillmentCompleted" name="Completed" />
+      <bpmn:endEvent id="End_FulfillmentCancelled" name="Cancelled" />
+      <bpmn:endEvent id="End_FulfillmentDisputed" name="Disputed" />
+      <bpmn:sequenceFlow id="Flow_SubFulfillment_01" sourceRef="Start_SubFulfillment" targetRef="Task_ChatCreateConversation" />
+      <bpmn:sequenceFlow id="Flow_SubFulfillment_02" sourceRef="Task_ChatCreateConversation" targetRef="Task_ChatExchangeMessages" />
+      <bpmn:sequenceFlow id="Flow_SubFulfillment_03" sourceRef="Task_ChatExchangeMessages" targetRef="Task_OrderCompleteCancelDispute" />
+      <bpmn:sequenceFlow id="Flow_SubFulfillment_04" sourceRef="Task_OrderCompleteCancelDispute" targetRef="Gateway_FulfillmentOutcome" />
+      <bpmn:sequenceFlow id="Flow_SubFulfillment_05" sourceRef="Gateway_FulfillmentOutcome" targetRef="End_FulfillmentCompleted" name="completed" />
+      <bpmn:sequenceFlow id="Flow_SubFulfillment_06" sourceRef="Gateway_FulfillmentOutcome" targetRef="End_FulfillmentCancelled" name="cancelled" />
+      <bpmn:sequenceFlow id="Flow_SubFulfillment_07" sourceRef="Gateway_FulfillmentOutcome" targetRef="End_FulfillmentDisputed" name="disputed" />
+    </bpmn:subProcess>
+    <bpmn:exclusiveGateway id="Gateway_PlatformFulfillmentOutcome" name="Completed, cancelled, or disputed?" />
+    <bpmn:subProcess id="Sub_ReviewRating" name="Record review and refresh provider rating" triggeredByEvent="false">
+      <bpmn:startEvent id="Start_SubReview" name="Review submitted" />
+      <bpmn:serviceTask id="Task_ReviewValidate" name="Validate owner, completed order, provider, and duplicate review" />
+      <bpmn:serviceTask id="Task_ReviewCreate" name="Create review" />
+      <bpmn:scriptTask id="Task_ReviewAggregate" name="Refresh provider average rating and review count" />
+      <bpmn:endEvent id="End_SubReview" name="Review recorded" />
+      <bpmn:endEvent id="End_SubReviewRejected" name="Review rejected by business rule" />
+      <bpmn:sequenceFlow id="Flow_SubReview_01" sourceRef="Start_SubReview" targetRef="Task_ReviewValidate" />
+      <bpmn:sequenceFlow id="Flow_SubReview_02" sourceRef="Task_ReviewValidate" targetRef="Task_ReviewCreate" name="valid" />
+      <bpmn:sequenceFlow id="Flow_SubReview_03" sourceRef="Task_ReviewValidate" targetRef="End_SubReviewRejected" name="invalid" />
+      <bpmn:sequenceFlow id="Flow_SubReview_04" sourceRef="Task_ReviewCreate" targetRef="Task_ReviewAggregate" />
+      <bpmn:sequenceFlow id="Flow_SubReview_05" sourceRef="Task_ReviewAggregate" targetRef="End_SubReview" />
+    </bpmn:subProcess>
+    <bpmn:serviceTask id="Task_EarningsAnalytics" name="Calculate earnings and dashboard metrics" />
+    <bpmn:subProcess id="Sub_ComplaintModeration" name="Resolve complaint or escalation" triggeredByEvent="false">
+      <bpmn:startEvent id="Start_SubComplaint" name="Complaint submitted" />
+      <bpmn:serviceTask id="Task_ComplaintCreate" name="Create complaint and action log" />
+      <bpmn:serviceTask id="Task_ComplaintNotifyAdmins" name="Notify admins and moderators" />
+      <bpmn:userTask id="Task_ComplaintAdminRespond" name="Admin or moderator responds" />
+      <bpmn:exclusiveGateway id="Gateway_ComplaintOutcome" name="Resolved, dismissed, or escalated?" />
+      <bpmn:serviceTask id="Task_ComplaintModerateAccount" name="Block account or revoke verification if needed" />
+      <bpmn:endEvent id="End_ComplaintResolved" name="Complaint resolved" />
+      <bpmn:endEvent id="End_ComplaintDismissed" name="Complaint dismissed" />
+      <bpmn:endEvent id="End_ComplaintEscalated" name="Complaint escalated" />
+      <bpmn:sequenceFlow id="Flow_SubComplaint_01" sourceRef="Start_SubComplaint" targetRef="Task_ComplaintCreate" />
+      <bpmn:sequenceFlow id="Flow_SubComplaint_02" sourceRef="Task_ComplaintCreate" targetRef="Task_ComplaintNotifyAdmins" />
+      <bpmn:sequenceFlow id="Flow_SubComplaint_03" sourceRef="Task_ComplaintNotifyAdmins" targetRef="Task_ComplaintAdminRespond" />
+      <bpmn:sequenceFlow id="Flow_SubComplaint_04" sourceRef="Task_ComplaintAdminRespond" targetRef="Gateway_ComplaintOutcome" />
+      <bpmn:sequenceFlow id="Flow_SubComplaint_05" sourceRef="Gateway_ComplaintOutcome" targetRef="End_ComplaintResolved" name="resolved" />
+      <bpmn:sequenceFlow id="Flow_SubComplaint_06" sourceRef="Gateway_ComplaintOutcome" targetRef="End_ComplaintDismissed" name="dismissed" />
+      <bpmn:sequenceFlow id="Flow_SubComplaint_07" sourceRef="Gateway_ComplaintOutcome" targetRef="Task_ComplaintModerateAccount" name="escalated" />
+      <bpmn:sequenceFlow id="Flow_SubComplaint_08" sourceRef="Task_ComplaintModerateAccount" targetRef="End_ComplaintEscalated" />
+    </bpmn:subProcess>
+    <bpmn:endEvent id="End_PlatformCompleted" name="Request completed" />
+    <bpmn:endEvent id="End_PlatformCancelled" name="Request cancelled" />
+    <bpmn:endEvent id="End_PlatformDisputed" name="Complaint resolved or escalated" />
+    <bpmn:sequenceFlow id="Flow_Platform_01" sourceRef="Start_PlatformRequestReceived" targetRef="Task_PlatformRouteFrontend" />
+    <bpmn:sequenceFlow id="Flow_Platform_02" sourceRef="Task_PlatformRouteFrontend" targetRef="Sub_Auth" />
+    <bpmn:sequenceFlow id="Flow_Platform_03" sourceRef="Sub_Auth" targetRef="Gateway_PlatformAuth" />
+    <bpmn:sequenceFlow id="Flow_Platform_04" sourceRef="Gateway_PlatformAuth" targetRef="End_PlatformAuthFailed" name="no" />
+    <bpmn:sequenceFlow id="Flow_Platform_05" sourceRef="Gateway_PlatformAuth" targetRef="Sub_ProviderReadiness" name="yes" />
+    <bpmn:sequenceFlow id="Flow_Platform_06" sourceRef="Sub_ProviderReadiness" targetRef="Gateway_PlatformProviderApproved" />
+    <bpmn:sequenceFlow id="Flow_Platform_07" sourceRef="Gateway_PlatformProviderApproved" targetRef="End_PlatformProviderRejected" name="no" />
+    <bpmn:sequenceFlow id="Flow_Platform_08" sourceRef="Gateway_PlatformProviderApproved" targetRef="Sub_Discovery" name="yes/not applicable" />
+    <bpmn:sequenceFlow id="Flow_Platform_09" sourceRef="Sub_Discovery" targetRef="Sub_KnowledgeRag" name="optional question" />
+    <bpmn:sequenceFlow id="Flow_Platform_10" sourceRef="Sub_KnowledgeRag" targetRef="Sub_OrderSubmission" />
+    <bpmn:sequenceFlow id="Flow_Platform_11" sourceRef="Sub_OrderSubmission" targetRef="Gateway_PlatformRequestValid" />
+    <bpmn:sequenceFlow id="Flow_Platform_12" sourceRef="Gateway_PlatformRequestValid" targetRef="End_PlatformValidationFailed" name="no" />
+    <bpmn:sequenceFlow id="Flow_Platform_13" sourceRef="Gateway_PlatformRequestValid" targetRef="Sub_BidWorkflow" name="yes" />
+    <bpmn:sequenceFlow id="Flow_Platform_14" sourceRef="Sub_BidWorkflow" targetRef="Sub_NotificationsAudit" />
+    <bpmn:sequenceFlow id="Flow_Platform_15" sourceRef="Sub_NotificationsAudit" targetRef="Gateway_PlatformOfferAccepted" />
+    <bpmn:sequenceFlow id="Flow_Platform_16" sourceRef="Gateway_PlatformOfferAccepted" targetRef="End_PlatformNoOffer" name="no" />
+    <bpmn:sequenceFlow id="Flow_Platform_17" sourceRef="Gateway_PlatformOfferAccepted" targetRef="Sub_FulfillmentChat" name="yes" />
+    <bpmn:sequenceFlow id="Flow_Platform_18" sourceRef="Sub_FulfillmentChat" targetRef="Gateway_PlatformFulfillmentOutcome" />
+    <bpmn:sequenceFlow id="Flow_Platform_19" sourceRef="Gateway_PlatformFulfillmentOutcome" targetRef="Sub_ReviewRating" name="completed" />
+    <bpmn:sequenceFlow id="Flow_Platform_20" sourceRef="Sub_ReviewRating" targetRef="Task_EarningsAnalytics" />
+    <bpmn:sequenceFlow id="Flow_Platform_21" sourceRef="Task_EarningsAnalytics" targetRef="End_PlatformCompleted" />
+    <bpmn:sequenceFlow id="Flow_Platform_22" sourceRef="Gateway_PlatformFulfillmentOutcome" targetRef="End_PlatformCancelled" name="cancelled" />
+    <bpmn:sequenceFlow id="Flow_Platform_23" sourceRef="Gateway_PlatformFulfillmentOutcome" targetRef="Sub_ComplaintModeration" name="disputed" />
+    <bpmn:sequenceFlow id="Flow_Platform_24" sourceRef="Sub_ComplaintModeration" targetRef="End_PlatformDisputed" />
+    <bpmn:dataObject id="Data_UserAccount_Object" name="User account, role, and status" />
+    <bpmn:dataObjectReference id="Data_UserAccount" name="User account, role, and status" dataObjectRef="Data_UserAccount_Object" />
+    <bpmn:dataObject id="Data_ProviderProfile_Object" name="Provider profile" />
+    <bpmn:dataObjectReference id="Data_ProviderProfile" name="Provider profile" dataObjectRef="Data_ProviderProfile_Object" />
+    <bpmn:dataObject id="Data_VerificationRequest_Object" name="Verification request and files" />
+    <bpmn:dataObjectReference id="Data_VerificationRequest" name="Verification request and files" dataObjectRef="Data_VerificationRequest_Object" />
+    <bpmn:dataObject id="Data_ServiceListing_Object" name="Service listing" />
+    <bpmn:dataObjectReference id="Data_ServiceListing" name="Service listing" dataObjectRef="Data_ServiceListing_Object" />
+    <bpmn:dataObject id="Data_Order_Object" name="Order and status history" />
+    <bpmn:dataObjectReference id="Data_Order" name="Order and status history" dataObjectRef="Data_Order_Object" />
+    <bpmn:dataObject id="Data_Bid_Object" name="Bid and bid status history" />
+    <bpmn:dataObjectReference id="Data_Bid" name="Bid and bid status history" dataObjectRef="Data_Bid_Object" />
+    <bpmn:dataObject id="Data_Conversation_Object" name="Conversation and messages" />
+    <bpmn:dataObjectReference id="Data_Conversation" name="Conversation and messages" dataObjectRef="Data_Conversation_Object" />
+    <bpmn:dataObject id="Data_Complaint_Object" name="Complaint, response, action log" />
+    <bpmn:dataObjectReference id="Data_Complaint" name="Complaint, response, action log" dataObjectRef="Data_Complaint_Object" />
+    <bpmn:dataObject id="Data_Review_Object" name="Review and rating aggregate" />
+    <bpmn:dataObjectReference id="Data_Review" name="Review and rating aggregate" dataObjectRef="Data_Review_Object" />
+    <bpmn:dataObject id="Data_Notification_Object" name="Notification" />
+    <bpmn:dataObjectReference id="Data_Notification" name="Notification" dataObjectRef="Data_Notification_Object" />
+    <bpmn:dataObject id="Data_Knowledge_Object" name="Knowledge source, document, chunk" />
+    <bpmn:dataObjectReference id="Data_Knowledge" name="Knowledge source, document, chunk" dataObjectRef="Data_Knowledge_Object" />
+    <bpmn:dataObject id="Data_AssistantTurn_Object" name="Assistant turn and citations" />
+    <bpmn:dataObjectReference id="Data_AssistantTurn" name="Assistant turn and citations" dataObjectRef="Data_AssistantTurn_Object" />
+    <bpmn:dataStore id="Store_Postgres_Store" name="PostgreSQL or SQLite database" />
+    <bpmn:dataStoreReference id="Store_Postgres" name="PostgreSQL or SQLite database" dataStoreRef="Store_Postgres_Store" />
+    <bpmn:dataStore id="Store_Media_Store" name="Django media file storage" />
+    <bpmn:dataStoreReference id="Store_Media" name="Django media file storage" dataStoreRef="Store_Media_Store" />
+    <bpmn:dataStore id="Store_Vector_Store" name="Postgres JSON or Zvec vector index" />
+    <bpmn:dataStoreReference id="Store_Vector" name="Postgres JSON or Zvec vector index" dataStoreRef="Store_Vector_Store" />
+    <bpmn:dataStore id="Store_Cache_Store" name="Django cache for embeddings and answers" />
+    <bpmn:dataStoreReference id="Store_Cache" name="Django cache for embeddings and answers" dataStoreRef="Store_Cache_Store" />
+    <bpmn:textAnnotation id="Annotation_NoPayment">
+      <bpmn:text>No payment gateway, checkout, refund, or ledger capture was found. Earnings are derived from accepted bid amounts.</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:textAnnotation id="Annotation_AuditGap">
+      <bpmn:text>Status history and complaint action logs exist. Security docs still list explicit audit logging persistence as pending.</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:textAnnotation id="Annotation_BidExpiryGap">
+      <bpmn:text>Bid status includes expired, but no scheduler or expiration transition was found.</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="Assoc_User_Auth" sourceRef="Data_UserAccount" targetRef="Sub_Auth" associationDirection="None" />
+    <bpmn:association id="Assoc_Provider_Readiness" sourceRef="Data_ProviderProfile" targetRef="Sub_ProviderReadiness" associationDirection="None" />
+    <bpmn:association id="Assoc_Verification_Readiness" sourceRef="Data_VerificationRequest" targetRef="Sub_ProviderReadiness" associationDirection="None" />
+    <bpmn:association id="Assoc_Service_Order" sourceRef="Data_ServiceListing" targetRef="Sub_OrderSubmission" associationDirection="None" />
+    <bpmn:association id="Assoc_Order_OrderSubmission" sourceRef="Data_Order" targetRef="Sub_OrderSubmission" associationDirection="None" />
+    <bpmn:association id="Assoc_Bid_BidWorkflow" sourceRef="Data_Bid" targetRef="Sub_BidWorkflow" associationDirection="None" />
+    <bpmn:association id="Assoc_Conversation_Fulfillment" sourceRef="Data_Conversation" targetRef="Sub_FulfillmentChat" associationDirection="None" />
+    <bpmn:association id="Assoc_Complaint_Moderation" sourceRef="Data_Complaint" targetRef="Sub_ComplaintModeration" associationDirection="None" />
+    <bpmn:association id="Assoc_Review_Rating" sourceRef="Data_Review" targetRef="Sub_ReviewRating" associationDirection="None" />
+    <bpmn:association id="Assoc_Notification_Audit" sourceRef="Data_Notification" targetRef="Sub_NotificationsAudit" associationDirection="None" />
+    <bpmn:association id="Assoc_Knowledge_Rag" sourceRef="Data_Knowledge" targetRef="Sub_KnowledgeRag" associationDirection="None" />
+    <bpmn:association id="Assoc_Assistant_Rag" sourceRef="Data_AssistantTurn" targetRef="Sub_KnowledgeRag" associationDirection="None" />
+    <bpmn:association id="Assoc_Postgres_Data" sourceRef="Store_Postgres" targetRef="Sub_BidWorkflow" associationDirection="None" />
+    <bpmn:association id="Assoc_Media_Knowledge" sourceRef="Store_Media" targetRef="Sub_KnowledgeRag" associationDirection="None" />
+    <bpmn:association id="Assoc_Vector_Knowledge" sourceRef="Store_Vector" targetRef="Sub_KnowledgeRag" associationDirection="None" />
+    <bpmn:association id="Assoc_Cache_Knowledge" sourceRef="Store_Cache" targetRef="Sub_KnowledgeRag" associationDirection="None" />
+    <bpmn:association id="Assoc_NoPayment_Earnings" sourceRef="Annotation_NoPayment" targetRef="Task_EarningsAnalytics" associationDirection="None" />
+    <bpmn:association id="Assoc_Audit_Notifications" sourceRef="Annotation_AuditGap" targetRef="Sub_NotificationsAudit" associationDirection="None" />
+    <bpmn:association id="Assoc_Expiry_Bid" sourceRef="Annotation_BidExpiryGap" targetRef="Sub_BidWorkflow" associationDirection="None" />
+  </bpmn:process>
+  <bpmn:process id="Process_Ollama" name="Local Ollama recommendation service" isExecutable="false">
+    <bpmn:startEvent id="Start_OllamaRequest" name="Problem analysis requested">
+      <bpmn:messageEventDefinition messageRef="Message_AiRequest" />
+    </bpmn:startEvent>
+    <bpmn:serviceTask id="Task_OllamaAnalyze" name="Analyze problem with Ollama model" />
+    <bpmn:endEvent id="End_OllamaResponse" name="Structured recommendation returned" />
+    <bpmn:sequenceFlow id="Flow_Ollama_01" sourceRef="Start_OllamaRequest" targetRef="Task_OllamaAnalyze" />
+    <bpmn:sequenceFlow id="Flow_Ollama_02" sourceRef="Task_OllamaAnalyze" targetRef="End_OllamaResponse" />
+  </bpmn:process>
+  <bpmn:process id="Process_OpenAI" name="OpenAI API processing" isExecutable="false">
+    <bpmn:startEvent id="Start_OpenAIRequest" name="OpenAI request received">
+      <bpmn:messageEventDefinition messageRef="Message_AiRequest" />
+    </bpmn:startEvent>
+    <bpmn:serviceTask id="Task_OpenAIEmbed" name="Create embeddings" />
+    <bpmn:serviceTask id="Task_OpenAIGenerate" name="Generate structured grounded answer" />
+    <bpmn:endEvent id="End_OpenAIResponse" name="OpenAI result returned" />
+    <bpmn:sequenceFlow id="Flow_OpenAI_01" sourceRef="Start_OpenAIRequest" targetRef="Task_OpenAIEmbed" />
+    <bpmn:sequenceFlow id="Flow_OpenAI_02" sourceRef="Task_OpenAIEmbed" targetRef="Task_OpenAIGenerate" />
+    <bpmn:sequenceFlow id="Flow_OpenAI_03" sourceRef="Task_OpenAIGenerate" targetRef="End_OpenAIResponse" />
+  </bpmn:process>
+  <bpmn:collaboration id="Collaboration_SyrianServices">
+    <bpmn:participant id="Participant_Customer" name="Customer" processRef="Process_Customer" />
+    <bpmn:participant id="Participant_Provider" name="Provider" processRef="Process_Provider" />
+    <bpmn:participant id="Participant_Platform" name="Syrian Services Platform" processRef="Process_Platform" />
+    <bpmn:participant id="Participant_Admin" name="Admin or Moderator" processRef="Process_Admin" />
+    <bpmn:participant id="Participant_Ollama" name="Local Ollama Service" processRef="Process_Ollama" />
+    <bpmn:participant id="Participant_OpenAI" name="OpenAI APIs" processRef="Process_OpenAI" />
+    <bpmn:messageFlow id="MF_CustomerSubmitRequest" name="Submit service request" sourceRef="Task_CustomerSubmitRequest" targetRef="Start_PlatformRequestReceived" />
+    <bpmn:messageFlow id="MF_CustomerKnowledgeQuestion" name="Ask provider knowledge question" sourceRef="Task_CustomerAskRag" targetRef="Sub_KnowledgeRag" />
+    <bpmn:messageFlow id="MF_PlatformCustomerOfferNotice" name="Offer notification" sourceRef="Sub_NotificationsAudit" targetRef="Task_CustomerReviewOffers" />
+    <bpmn:messageFlow id="MF_CustomerAcceptOffer" name="Accept selected offer" sourceRef="Task_CustomerAcceptOffer" targetRef="Sub_BidWorkflow" />
+    <bpmn:messageFlow id="MF_CustomerRejectCancel" name="Reject or cancel" sourceRef="Task_CustomerRejectCancel" targetRef="Sub_BidWorkflow" />
+    <bpmn:messageFlow id="MF_CustomerComplaint" name="Submit complaint" sourceRef="Task_CustomerCreateComplaint" targetRef="Sub_ComplaintModeration" />
+    <bpmn:messageFlow id="MF_ProviderVerificationEvidence" name="Submit verification evidence" sourceRef="Task_ProviderSubmitVerification" targetRef="Sub_ProviderReadiness" />
+    <bpmn:messageFlow id="MF_PlatformVerificationResult" name="Verification result" sourceRef="Sub_ProviderReadiness" targetRef="Event_ProviderVerificationResult" />
+    <bpmn:messageFlow id="MF_ProviderKnowledgeUpload" name="Submit knowledge source" sourceRef="Task_ProviderUploadKnowledge" targetRef="Sub_KnowledgeRag" />
+    <bpmn:messageFlow id="MF_PlatformRequestAvailable" name="Request available" sourceRef="Sub_NotificationsAudit" targetRef="Event_ProviderRequestAvailable" />
+    <bpmn:messageFlow id="MF_ProviderBid" name="Submit provider offer" sourceRef="Task_ProviderSubmitBid" targetRef="Sub_BidWorkflow" />
+    <bpmn:messageFlow id="MF_PlatformBidAccepted" name="Offer decision" sourceRef="Sub_NotificationsAudit" targetRef="Gateway_ProviderBidAccepted" />
+    <bpmn:messageFlow id="MF_ProviderCompletion" name="Mark completed" sourceRef="Task_ProviderMarkCompleted" targetRef="Sub_FulfillmentChat" />
+    <bpmn:messageFlow id="MF_PlatformAdminQueue" name="Admin queue notification" sourceRef="Sub_NotificationsAudit" targetRef="Start_AdminQueue" />
+    <bpmn:messageFlow id="MF_AdminVerificationDecision" name="Verification decision" sourceRef="Task_AdminReviewVerification" targetRef="Sub_ProviderReadiness" />
+    <bpmn:messageFlow id="MF_AdminComplaintDecision" name="Complaint response" sourceRef="Task_AdminHandleComplaint" targetRef="Sub_ComplaintModeration" />
+    <bpmn:messageFlow id="MF_PlatformOllamaRequest" name="Problem analysis request" sourceRef="Sub_Discovery" targetRef="Start_OllamaRequest" />
+    <bpmn:messageFlow id="MF_OllamaPlatformResponse" name="Structured recommendation" sourceRef="End_OllamaResponse" targetRef="Sub_Discovery" />
+    <bpmn:messageFlow id="MF_PlatformOpenAIRequest" name="Embedding or answer request" sourceRef="Sub_KnowledgeRag" targetRef="Start_OpenAIRequest" />
+    <bpmn:messageFlow id="MF_OpenAIPlatformResponse" name="Embedding or answer result" sourceRef="End_OpenAIResponse" targetRef="Sub_KnowledgeRag" />
+  </bpmn:collaboration>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_SyrianServices">
+    <bpmndi:BPMNPlane id="BPMNPlane_SyrianServices" bpmnElement="Collaboration_SyrianServices">
+      <bpmndi:BPMNShape id="Participant_Customer_di" bpmnElement="Participant_Customer" isHorizontal="true">
+        <dc:Bounds x="70" y="40" width="2920" height="140" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Participant_Provider_di" bpmnElement="Participant_Provider" isHorizontal="true">
+        <dc:Bounds x="70" y="200" width="2920" height="155" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Participant_Platform_di" bpmnElement="Participant_Platform" isHorizontal="true">
+        <dc:Bounds x="70" y="380" width="2920" height="535" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Participant_Admin_di" bpmnElement="Participant_Admin" isHorizontal="true">
+        <dc:Bounds x="70" y="940" width="2920" height="155" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Participant_Ollama_di" bpmnElement="Participant_Ollama" isHorizontal="true">
+        <dc:Bounds x="70" y="1120" width="2920" height="105" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Participant_OpenAI_di" bpmnElement="Participant_OpenAI" isHorizontal="true">
+        <dc:Bounds x="70" y="1245" width="2920" height="120" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Platform_Frontend_di" bpmnElement="Lane_Platform_Frontend" isHorizontal="true">
+        <dc:Bounds x="100" y="380" width="2890" height="75" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Platform_AuthApi_di" bpmnElement="Lane_Platform_AuthApi" isHorizontal="true">
+        <dc:Bounds x="100" y="455" width="2890" height="95" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Platform_Domain_di" bpmnElement="Lane_Platform_Domain" isHorizontal="true">
+        <dc:Bounds x="100" y="550" width="2890" height="245" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Platform_Worker_di" bpmnElement="Lane_Platform_Worker" isHorizontal="true">
+        <dc:Bounds x="100" y="795" width="2890" height="65" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Platform_Data_di" bpmnElement="Lane_Platform_Data" isHorizontal="true">
+        <dc:Bounds x="100" y="860" width="2890" height="55" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Start_CustomerNeed_di" bpmnElement="Start_CustomerNeed">
+        <dc:Bounds x="130" y="90" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_CustomerSignIn_di" bpmnElement="Task_CustomerSignIn">
+        <dc:Bounds x="210" y="78" width="120" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_CustomerDiscover_di" bpmnElement="Task_CustomerDiscover">
+        <dc:Bounds x="390" y="78" width="150" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_CustomerAskRag_di" bpmnElement="Task_CustomerAskRag">
+        <dc:Bounds x="610" y="78" width="135" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_CustomerSubmitRequest_di" bpmnElement="Task_CustomerSubmitRequest">
+        <dc:Bounds x="805" y="78" width="130" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_CustomerReviewOffers_di" bpmnElement="Task_CustomerReviewOffers">
+        <dc:Bounds x="990" y="78" width="130" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_CustomerDecision_di" bpmnElement="Gateway_CustomerDecision">
+        <dc:Bounds x="1180" y="78" width="55" height="55" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_CustomerAcceptOffer_di" bpmnElement="Task_CustomerAcceptOffer">
+        <dc:Bounds x="1305" y="78" width="120" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_CustomerRejectCancel_di" bpmnElement="Task_CustomerRejectCancel">
+        <dc:Bounds x="1305" y="133" width="145" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_CustomerChatTrack_di" bpmnElement="Task_CustomerChatTrack">
+        <dc:Bounds x="1495" y="78" width="135" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_CustomerOutcome_di" bpmnElement="Gateway_CustomerOutcome">
+        <dc:Bounds x="1690" y="78" width="55" height="55" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_CustomerCreateComplaint_di" bpmnElement="Task_CustomerCreateComplaint">
+        <dc:Bounds x="1825" y="133" width="120" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_CustomerCreateReview_di" bpmnElement="Task_CustomerCreateReview">
+        <dc:Bounds x="1825" y="78" width="120" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_CustomerCompleted_di" bpmnElement="End_CustomerCompleted">
+        <dc:Bounds x="2025" y="87" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_CustomerCancelled_di" bpmnElement="End_CustomerCancelled">
+        <dc:Bounds x="1510" y="138" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_CustomerDisputed_di" bpmnElement="End_CustomerDisputed">
+        <dc:Bounds x="2025" y="138" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Start_ProviderJoin_di" bpmnElement="Start_ProviderJoin">
+        <dc:Bounds x="130" y="260" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ProviderSignIn_di" bpmnElement="Task_ProviderSignIn">
+        <dc:Bounds x="210" y="248" width="120" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ProviderSubmitVerification_di" bpmnElement="Task_ProviderSubmitVerification">
+        <dc:Bounds x="390" y="248" width="140" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_ProviderVerificationResult_di" bpmnElement="Event_ProviderVerificationResult">
+        <dc:Bounds x="590" y="255" width="42" height="42" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_ProviderVerified_di" bpmnElement="Gateway_ProviderVerified">
+        <dc:Bounds x="690" y="248" width="55" height="55" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ProviderManageProfileServices_di" bpmnElement="Task_ProviderManageProfileServices">
+        <dc:Bounds x="810" y="248" width="155" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ProviderUploadKnowledge_di" bpmnElement="Task_ProviderUploadKnowledge">
+        <dc:Bounds x="1035" y="248" width="140" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_ProviderRequestAvailable_di" bpmnElement="Event_ProviderRequestAvailable">
+        <dc:Bounds x="1235" y="255" width="42" height="42" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ProviderSubmitBid_di" bpmnElement="Task_ProviderSubmitBid">
+        <dc:Bounds x="1345" y="248" width="115" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_ProviderBidAccepted_di" bpmnElement="Gateway_ProviderBidAccepted">
+        <dc:Bounds x="1525" y="248" width="55" height="55" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ProviderPerformWork_di" bpmnElement="Task_ProviderPerformWork">
+        <dc:Bounds x="1640" y="248" width="125" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ProviderMarkCompleted_di" bpmnElement="Task_ProviderMarkCompleted">
+        <dc:Bounds x="1835" y="248" width="125" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_ProviderJobCompleted_di" bpmnElement="End_ProviderJobCompleted">
+        <dc:Bounds x="2030" y="257" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_ProviderVerificationRejected_di" bpmnElement="End_ProviderVerificationRejected">
+        <dc:Bounds x="815" y="307" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_ProviderOfferRejected_di" bpmnElement="End_ProviderOfferRejected">
+        <dc:Bounds x="1640" y="307" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Start_AdminQueue_di" bpmnElement="Start_AdminQueue">
+        <dc:Bounds x="130" y="1000" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_AdminViewDashboard_di" bpmnElement="Task_AdminViewDashboard">
+        <dc:Bounds x="210" y="988" width="135" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_AdminReviewVerification_di" bpmnElement="Task_AdminReviewVerification">
+        <dc:Bounds x="420" y="988" width="150" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_AdminApproveVerification_di" bpmnElement="Gateway_AdminApproveVerification">
+        <dc:Bounds x="640" y="988" width="55" height="55" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_AdminApproveProvider_di" bpmnElement="Task_AdminApproveProvider">
+        <dc:Bounds x="760" y="960" width="130" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_AdminRejectProvider_di" bpmnElement="Task_AdminRejectProvider">
+        <dc:Bounds x="760" y="1025" width="130" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_AdminHandleComplaint_di" bpmnElement="Task_AdminHandleComplaint">
+        <dc:Bounds x="960" y="988" width="130" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_AdminModerateAccount_di" bpmnElement="Task_AdminModerateAccount">
+        <dc:Bounds x="1165" y="988" width="145" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_AdminQueuesHandled_di" bpmnElement="End_AdminQueuesHandled">
+        <dc:Bounds x="1385" y="997" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Start_PlatformRequestReceived_di" bpmnElement="Start_PlatformRequestReceived">
+        <dc:Bounds x="130" y="402" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_PlatformRouteFrontend_di" bpmnElement="Task_PlatformRouteFrontend">
+        <dc:Bounds x="205" y="392" width="130" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Sub_Auth_di" bpmnElement="Sub_Auth" isExpanded="false">
+        <dc:Bounds x="380" y="478" width="150" height="55" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_PlatformAuth_di" bpmnElement="Gateway_PlatformAuth">
+        <dc:Bounds x="575" y="478" width="55" height="55" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_PlatformAuthFailed_di" bpmnElement="End_PlatformAuthFailed">
+        <dc:Bounds x="590" y="423" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Sub_ProviderReadiness_di" bpmnElement="Sub_ProviderReadiness" isExpanded="false">
+        <dc:Bounds x="700" y="610" width="155" height="60" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_PlatformProviderApproved_di" bpmnElement="Gateway_PlatformProviderApproved">
+        <dc:Bounds x="900" y="610" width="55" height="55" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_PlatformProviderRejected_di" bpmnElement="End_PlatformProviderRejected">
+        <dc:Bounds x="915" y="698" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Sub_Discovery_di" bpmnElement="Sub_Discovery" isExpanded="false">
+        <dc:Bounds x="1025" y="610" width="150" height="60" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Sub_KnowledgeRag_di" bpmnElement="Sub_KnowledgeRag" isExpanded="false">
+        <dc:Bounds x="1240" y="610" width="150" height="60" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Sub_OrderSubmission_di" bpmnElement="Sub_OrderSubmission" isExpanded="false">
+        <dc:Bounds x="1455" y="610" width="150" height="60" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_PlatformRequestValid_di" bpmnElement="Gateway_PlatformRequestValid">
+        <dc:Bounds x="1660" y="610" width="55" height="55" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_PlatformValidationFailed_di" bpmnElement="End_PlatformValidationFailed">
+        <dc:Bounds x="1675" y="698" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Sub_BidWorkflow_di" bpmnElement="Sub_BidWorkflow" isExpanded="false">
+        <dc:Bounds x="1785" y="610" width="150" height="60" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Sub_NotificationsAudit_di" bpmnElement="Sub_NotificationsAudit" isExpanded="false">
+        <dc:Bounds x="1995" y="800" width="155" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_PlatformOfferAccepted_di" bpmnElement="Gateway_PlatformOfferAccepted">
+        <dc:Bounds x="2210" y="610" width="55" height="55" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_PlatformNoOffer_di" bpmnElement="End_PlatformNoOffer">
+        <dc:Bounds x="2225" y="698" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Sub_FulfillmentChat_di" bpmnElement="Sub_FulfillmentChat" isExpanded="false">
+        <dc:Bounds x="2335" y="610" width="150" height="60" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_PlatformFulfillmentOutcome_di" bpmnElement="Gateway_PlatformFulfillmentOutcome">
+        <dc:Bounds x="2545" y="610" width="55" height="55" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Sub_ReviewRating_di" bpmnElement="Sub_ReviewRating" isExpanded="false">
+        <dc:Bounds x="2665" y="565" width="150" height="55" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_EarningsAnalytics_di" bpmnElement="Task_EarningsAnalytics">
+        <dc:Bounds x="2665" y="635" width="150" height="55" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Sub_ComplaintModeration_di" bpmnElement="Sub_ComplaintModeration" isExpanded="false">
+        <dc:Bounds x="2665" y="720" width="150" height="55" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_PlatformCompleted_di" bpmnElement="End_PlatformCompleted">
+        <dc:Bounds x="2885" y="645" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_PlatformCancelled_di" bpmnElement="End_PlatformCancelled">
+        <dc:Bounds x="2665" y="820" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_PlatformDisputed_di" bpmnElement="End_PlatformDisputed">
+        <dc:Bounds x="2885" y="730" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Start_OllamaRequest_di" bpmnElement="Start_OllamaRequest">
+        <dc:Bounds x="1120" y="1155" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_OllamaAnalyze_di" bpmnElement="Task_OllamaAnalyze">
+        <dc:Bounds x="1210" y="1145" width="150" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_OllamaResponse_di" bpmnElement="End_OllamaResponse">
+        <dc:Bounds x="1420" y="1155" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Start_OpenAIRequest_di" bpmnElement="Start_OpenAIRequest">
+        <dc:Bounds x="1240" y="1285" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_OpenAIEmbed_di" bpmnElement="Task_OpenAIEmbed">
+        <dc:Bounds x="1330" y="1275" width="130" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_OpenAIGenerate_di" bpmnElement="Task_OpenAIGenerate">
+        <dc:Bounds x="1515" y="1275" width="155" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_OpenAIResponse_di" bpmnElement="End_OpenAIResponse">
+        <dc:Bounds x="1725" y="1285" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Data_UserAccount_di" bpmnElement="Data_UserAccount">
+        <dc:Bounds x="180" y="872" width="95" height="34" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Data_ProviderProfile_di" bpmnElement="Data_ProviderProfile">
+        <dc:Bounds x="295" y="872" width="95" height="34" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Data_VerificationRequest_di" bpmnElement="Data_VerificationRequest">
+        <dc:Bounds x="410" y="872" width="95" height="34" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Data_ServiceListing_di" bpmnElement="Data_ServiceListing">
+        <dc:Bounds x="525" y="872" width="95" height="34" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Data_Order_di" bpmnElement="Data_Order">
+        <dc:Bounds x="640" y="872" width="95" height="34" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Data_Bid_di" bpmnElement="Data_Bid">
+        <dc:Bounds x="755" y="872" width="95" height="34" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Data_Conversation_di" bpmnElement="Data_Conversation">
+        <dc:Bounds x="870" y="872" width="95" height="34" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Data_Complaint_di" bpmnElement="Data_Complaint">
+        <dc:Bounds x="985" y="872" width="95" height="34" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Data_Review_di" bpmnElement="Data_Review">
+        <dc:Bounds x="1100" y="872" width="95" height="34" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Data_Notification_di" bpmnElement="Data_Notification">
+        <dc:Bounds x="1215" y="872" width="95" height="34" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Data_Knowledge_di" bpmnElement="Data_Knowledge">
+        <dc:Bounds x="1330" y="872" width="95" height="34" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Data_AssistantTurn_di" bpmnElement="Data_AssistantTurn">
+        <dc:Bounds x="1445" y="872" width="95" height="34" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Store_Postgres_di" bpmnElement="Store_Postgres">
+        <dc:Bounds x="1640" y="872" width="125" height="34" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Store_Media_di" bpmnElement="Store_Media">
+        <dc:Bounds x="1795" y="872" width="125" height="34" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Store_Vector_di" bpmnElement="Store_Vector">
+        <dc:Bounds x="1950" y="872" width="125" height="34" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Store_Cache_di" bpmnElement="Store_Cache">
+        <dc:Bounds x="2105" y="872" width="125" height="34" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Annotation_NoPayment_di" bpmnElement="Annotation_NoPayment">
+        <dc:Bounds x="2310" y="850" width="190" height="55" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Annotation_AuditGap_di" bpmnElement="Annotation_AuditGap">
+        <dc:Bounds x="2525" y="850" width="185" height="55" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Annotation_BidExpiryGap_di" bpmnElement="Annotation_BidExpiryGap">
+        <dc:Bounds x="2735" y="850" width="170" height="55" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_Customer_01_di" bpmnElement="Flow_Customer_01">
+        <di:waypoint x="166" y="108" />
+        <di:waypoint x="210" y="103" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Customer_02_di" bpmnElement="Flow_Customer_02">
+        <di:waypoint x="330" y="103" />
+        <di:waypoint x="390" y="103" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Customer_03_di" bpmnElement="Flow_Customer_03">
+        <di:waypoint x="540" y="103" />
+        <di:waypoint x="610" y="103" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Customer_04_di" bpmnElement="Flow_Customer_04">
+        <di:waypoint x="745" y="103" />
+        <di:waypoint x="805" y="103" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Customer_05_di" bpmnElement="Flow_Customer_05">
+        <di:waypoint x="935" y="103" />
+        <di:waypoint x="990" y="103" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Customer_06_di" bpmnElement="Flow_Customer_06">
+        <di:waypoint x="1120" y="103" />
+        <di:waypoint x="1180" y="105" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Customer_07_di" bpmnElement="Flow_Customer_07">
+        <di:waypoint x="1235" y="105" />
+        <di:waypoint x="1305" y="103" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Customer_08_di" bpmnElement="Flow_Customer_08">
+        <di:waypoint x="1235" y="105" />
+        <di:waypoint x="1305" y="158" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Customer_09_di" bpmnElement="Flow_Customer_09">
+        <di:waypoint x="1450" y="158" />
+        <di:waypoint x="1510" y="156" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Customer_10_di" bpmnElement="Flow_Customer_10">
+        <di:waypoint x="1425" y="103" />
+        <di:waypoint x="1495" y="103" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Customer_11_di" bpmnElement="Flow_Customer_11">
+        <di:waypoint x="1630" y="103" />
+        <di:waypoint x="1690" y="105" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Customer_12_di" bpmnElement="Flow_Customer_12">
+        <di:waypoint x="1745" y="105" />
+        <di:waypoint x="1825" y="103" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Customer_13_di" bpmnElement="Flow_Customer_13">
+        <di:waypoint x="1745" y="105" />
+        <di:waypoint x="1825" y="158" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Customer_14_di" bpmnElement="Flow_Customer_14">
+        <di:waypoint x="1945" y="158" />
+        <di:waypoint x="2025" y="156" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Customer_15_di" bpmnElement="Flow_Customer_15">
+        <di:waypoint x="1945" y="103" />
+        <di:waypoint x="2025" y="105" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Provider_01_di" bpmnElement="Flow_Provider_01">
+        <di:waypoint x="166" y="278" />
+        <di:waypoint x="210" y="273" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Provider_02_di" bpmnElement="Flow_Provider_02">
+        <di:waypoint x="330" y="273" />
+        <di:waypoint x="390" y="273" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Provider_03_di" bpmnElement="Flow_Provider_03">
+        <di:waypoint x="530" y="273" />
+        <di:waypoint x="590" y="276" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Provider_04_di" bpmnElement="Flow_Provider_04">
+        <di:waypoint x="632" y="276" />
+        <di:waypoint x="690" y="275" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Provider_05_di" bpmnElement="Flow_Provider_05">
+        <di:waypoint x="745" y="275" />
+        <di:waypoint x="810" y="273" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Provider_06_di" bpmnElement="Flow_Provider_06">
+        <di:waypoint x="745" y="275" />
+        <di:waypoint x="815" y="325" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Provider_07_di" bpmnElement="Flow_Provider_07">
+        <di:waypoint x="965" y="273" />
+        <di:waypoint x="1035" y="273" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Provider_08_di" bpmnElement="Flow_Provider_08">
+        <di:waypoint x="1175" y="273" />
+        <di:waypoint x="1235" y="276" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Provider_09_di" bpmnElement="Flow_Provider_09">
+        <di:waypoint x="1277" y="276" />
+        <di:waypoint x="1345" y="273" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Provider_10_di" bpmnElement="Flow_Provider_10">
+        <di:waypoint x="1460" y="273" />
+        <di:waypoint x="1525" y="275" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Provider_11_di" bpmnElement="Flow_Provider_11">
+        <di:waypoint x="1580" y="275" />
+        <di:waypoint x="1640" y="273" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Provider_12_di" bpmnElement="Flow_Provider_12">
+        <di:waypoint x="1580" y="275" />
+        <di:waypoint x="1640" y="325" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Provider_13_di" bpmnElement="Flow_Provider_13">
+        <di:waypoint x="1765" y="273" />
+        <di:waypoint x="1835" y="273" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Provider_14_di" bpmnElement="Flow_Provider_14">
+        <di:waypoint x="1960" y="273" />
+        <di:waypoint x="2030" y="275" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Admin_01_di" bpmnElement="Flow_Admin_01">
+        <di:waypoint x="166" y="1018" />
+        <di:waypoint x="210" y="1013" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Admin_02_di" bpmnElement="Flow_Admin_02">
+        <di:waypoint x="345" y="1013" />
+        <di:waypoint x="420" y="1013" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Admin_03_di" bpmnElement="Flow_Admin_03">
+        <di:waypoint x="570" y="1013" />
+        <di:waypoint x="640" y="1015" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Admin_04_di" bpmnElement="Flow_Admin_04">
+        <di:waypoint x="695" y="1015" />
+        <di:waypoint x="760" y="985" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Admin_05_di" bpmnElement="Flow_Admin_05">
+        <di:waypoint x="695" y="1015" />
+        <di:waypoint x="760" y="1050" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Admin_06_di" bpmnElement="Flow_Admin_06">
+        <di:waypoint x="890" y="985" />
+        <di:waypoint x="960" y="1013" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Admin_07_di" bpmnElement="Flow_Admin_07">
+        <di:waypoint x="890" y="1050" />
+        <di:waypoint x="960" y="1013" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Admin_08_di" bpmnElement="Flow_Admin_08">
+        <di:waypoint x="1090" y="1013" />
+        <di:waypoint x="1165" y="1013" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Admin_09_di" bpmnElement="Flow_Admin_09">
+        <di:waypoint x="1310" y="1013" />
+        <di:waypoint x="1385" y="1015" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Platform_01_di" bpmnElement="Flow_Platform_01">
+        <di:waypoint x="166" y="420" />
+        <di:waypoint x="205" y="417" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Platform_02_di" bpmnElement="Flow_Platform_02">
+        <di:waypoint x="270" y="417" />
+        <di:waypoint x="362" y="417" />
+        <di:waypoint x="362" y="505" />
+        <di:waypoint x="455" y="505" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Platform_03_di" bpmnElement="Flow_Platform_03">
+        <di:waypoint x="530" y="505" />
+        <di:waypoint x="575" y="505" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Platform_04_di" bpmnElement="Flow_Platform_04">
+        <di:waypoint x="630" y="505" />
+        <di:waypoint x="590" y="441" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Platform_05_di" bpmnElement="Flow_Platform_05">
+        <di:waypoint x="602" y="505" />
+        <di:waypoint x="689" y="505" />
+        <di:waypoint x="689" y="640" />
+        <di:waypoint x="777" y="640" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Platform_06_di" bpmnElement="Flow_Platform_06">
+        <di:waypoint x="855" y="640" />
+        <di:waypoint x="900" y="637" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Platform_07_di" bpmnElement="Flow_Platform_07">
+        <di:waypoint x="955" y="637" />
+        <di:waypoint x="915" y="716" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Platform_08_di" bpmnElement="Flow_Platform_08">
+        <di:waypoint x="955" y="637" />
+        <di:waypoint x="1025" y="640" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Platform_09_di" bpmnElement="Flow_Platform_09">
+        <di:waypoint x="1175" y="640" />
+        <di:waypoint x="1240" y="640" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Platform_10_di" bpmnElement="Flow_Platform_10">
+        <di:waypoint x="1390" y="640" />
+        <di:waypoint x="1455" y="640" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Platform_11_di" bpmnElement="Flow_Platform_11">
+        <di:waypoint x="1605" y="640" />
+        <di:waypoint x="1660" y="637" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Platform_12_di" bpmnElement="Flow_Platform_12">
+        <di:waypoint x="1715" y="637" />
+        <di:waypoint x="1675" y="716" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Platform_13_di" bpmnElement="Flow_Platform_13">
+        <di:waypoint x="1715" y="637" />
+        <di:waypoint x="1785" y="640" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Platform_14_di" bpmnElement="Flow_Platform_14">
+        <di:waypoint x="1860" y="640" />
+        <di:waypoint x="1966" y="640" />
+        <di:waypoint x="1966" y="825" />
+        <di:waypoint x="2072" y="825" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Platform_15_di" bpmnElement="Flow_Platform_15">
+        <di:waypoint x="2072" y="825" />
+        <di:waypoint x="2154" y="825" />
+        <di:waypoint x="2154" y="637" />
+        <di:waypoint x="2237" y="637" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Platform_16_di" bpmnElement="Flow_Platform_16">
+        <di:waypoint x="2265" y="637" />
+        <di:waypoint x="2225" y="716" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Platform_17_di" bpmnElement="Flow_Platform_17">
+        <di:waypoint x="2265" y="637" />
+        <di:waypoint x="2335" y="640" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Platform_18_di" bpmnElement="Flow_Platform_18">
+        <di:waypoint x="2485" y="640" />
+        <di:waypoint x="2545" y="637" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Platform_19_di" bpmnElement="Flow_Platform_19">
+        <di:waypoint x="2600" y="637" />
+        <di:waypoint x="2665" y="592" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Platform_20_di" bpmnElement="Flow_Platform_20">
+        <di:waypoint x="2815" y="592" />
+        <di:waypoint x="2665" y="662" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Platform_21_di" bpmnElement="Flow_Platform_21">
+        <di:waypoint x="2815" y="662" />
+        <di:waypoint x="2885" y="663" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Platform_22_di" bpmnElement="Flow_Platform_22">
+        <di:waypoint x="2572" y="637" />
+        <di:waypoint x="2627" y="637" />
+        <di:waypoint x="2627" y="838" />
+        <di:waypoint x="2683" y="838" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Platform_23_di" bpmnElement="Flow_Platform_23">
+        <di:waypoint x="2572" y="637" />
+        <di:waypoint x="2656" y="637" />
+        <di:waypoint x="2656" y="747" />
+        <di:waypoint x="2740" y="747" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Platform_24_di" bpmnElement="Flow_Platform_24">
+        <di:waypoint x="2815" y="747" />
+        <di:waypoint x="2885" y="748" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Ollama_01_di" bpmnElement="Flow_Ollama_01">
+        <di:waypoint x="1156" y="1173" />
+        <di:waypoint x="1210" y="1170" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Ollama_02_di" bpmnElement="Flow_Ollama_02">
+        <di:waypoint x="1360" y="1170" />
+        <di:waypoint x="1420" y="1173" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_OpenAI_01_di" bpmnElement="Flow_OpenAI_01">
+        <di:waypoint x="1276" y="1303" />
+        <di:waypoint x="1330" y="1300" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_OpenAI_02_di" bpmnElement="Flow_OpenAI_02">
+        <di:waypoint x="1460" y="1300" />
+        <di:waypoint x="1515" y="1300" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_OpenAI_03_di" bpmnElement="Flow_OpenAI_03">
+        <di:waypoint x="1670" y="1300" />
+        <di:waypoint x="1725" y="1303" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MF_CustomerSubmitRequest_di" bpmnElement="MF_CustomerSubmitRequest">
+        <di:waypoint x="870" y="103" />
+        <di:waypoint x="509" y="103" />
+        <di:waypoint x="509" y="420" />
+        <di:waypoint x="148" y="420" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MF_CustomerKnowledgeQuestion_di" bpmnElement="MF_CustomerKnowledgeQuestion">
+        <di:waypoint x="677" y="103" />
+        <di:waypoint x="996" y="103" />
+        <di:waypoint x="996" y="640" />
+        <di:waypoint x="1315" y="640" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MF_PlatformCustomerOfferNotice_di" bpmnElement="MF_PlatformCustomerOfferNotice">
+        <di:waypoint x="2072" y="825" />
+        <di:waypoint x="1563" y="825" />
+        <di:waypoint x="1563" y="103" />
+        <di:waypoint x="1055" y="103" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MF_CustomerAcceptOffer_di" bpmnElement="MF_CustomerAcceptOffer">
+        <di:waypoint x="1365" y="103" />
+        <di:waypoint x="1612" y="103" />
+        <di:waypoint x="1612" y="640" />
+        <di:waypoint x="1860" y="640" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MF_CustomerRejectCancel_di" bpmnElement="MF_CustomerRejectCancel">
+        <di:waypoint x="1377" y="158" />
+        <di:waypoint x="1618" y="158" />
+        <di:waypoint x="1618" y="640" />
+        <di:waypoint x="1860" y="640" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MF_CustomerComplaint_di" bpmnElement="MF_CustomerComplaint">
+        <di:waypoint x="1885" y="158" />
+        <di:waypoint x="2312" y="158" />
+        <di:waypoint x="2312" y="747" />
+        <di:waypoint x="2740" y="747" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MF_ProviderVerificationEvidence_di" bpmnElement="MF_ProviderVerificationEvidence">
+        <di:waypoint x="460" y="273" />
+        <di:waypoint x="618" y="273" />
+        <di:waypoint x="618" y="640" />
+        <di:waypoint x="777" y="640" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MF_PlatformVerificationResult_di" bpmnElement="MF_PlatformVerificationResult">
+        <di:waypoint x="777" y="640" />
+        <di:waypoint x="694" y="640" />
+        <di:waypoint x="694" y="276" />
+        <di:waypoint x="611" y="276" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MF_ProviderKnowledgeUpload_di" bpmnElement="MF_ProviderKnowledgeUpload">
+        <di:waypoint x="1105" y="273" />
+        <di:waypoint x="1210" y="273" />
+        <di:waypoint x="1210" y="640" />
+        <di:waypoint x="1315" y="640" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MF_PlatformRequestAvailable_di" bpmnElement="MF_PlatformRequestAvailable">
+        <di:waypoint x="2072" y="825" />
+        <di:waypoint x="1664" y="825" />
+        <di:waypoint x="1664" y="276" />
+        <di:waypoint x="1256" y="276" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MF_ProviderBid_di" bpmnElement="MF_ProviderBid">
+        <di:waypoint x="1402" y="273" />
+        <di:waypoint x="1631" y="273" />
+        <di:waypoint x="1631" y="640" />
+        <di:waypoint x="1860" y="640" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MF_PlatformBidAccepted_di" bpmnElement="MF_PlatformBidAccepted">
+        <di:waypoint x="2072" y="825" />
+        <di:waypoint x="1812" y="825" />
+        <di:waypoint x="1812" y="275" />
+        <di:waypoint x="1552" y="275" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MF_ProviderCompletion_di" bpmnElement="MF_ProviderCompletion">
+        <di:waypoint x="1897" y="273" />
+        <di:waypoint x="2153" y="273" />
+        <di:waypoint x="2153" y="640" />
+        <di:waypoint x="2410" y="640" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MF_PlatformAdminQueue_di" bpmnElement="MF_PlatformAdminQueue">
+        <di:waypoint x="2072" y="825" />
+        <di:waypoint x="1110" y="825" />
+        <di:waypoint x="1110" y="1018" />
+        <di:waypoint x="148" y="1018" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MF_AdminVerificationDecision_di" bpmnElement="MF_AdminVerificationDecision">
+        <di:waypoint x="495" y="1013" />
+        <di:waypoint x="636" y="1013" />
+        <di:waypoint x="636" y="640" />
+        <di:waypoint x="777" y="640" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MF_AdminComplaintDecision_di" bpmnElement="MF_AdminComplaintDecision">
+        <di:waypoint x="1025" y="1013" />
+        <di:waypoint x="1882" y="1013" />
+        <di:waypoint x="1882" y="747" />
+        <di:waypoint x="2740" y="747" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MF_PlatformOllamaRequest_di" bpmnElement="MF_PlatformOllamaRequest">
+        <di:waypoint x="1100" y="640" />
+        <di:waypoint x="1119" y="640" />
+        <di:waypoint x="1119" y="1173" />
+        <di:waypoint x="1138" y="1173" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MF_OllamaPlatformResponse_di" bpmnElement="MF_OllamaPlatformResponse">
+        <di:waypoint x="1438" y="1173" />
+        <di:waypoint x="1269" y="1173" />
+        <di:waypoint x="1269" y="640" />
+        <di:waypoint x="1100" y="640" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MF_PlatformOpenAIRequest_di" bpmnElement="MF_PlatformOpenAIRequest">
+        <di:waypoint x="1315" y="640" />
+        <di:waypoint x="1286" y="640" />
+        <di:waypoint x="1286" y="1303" />
+        <di:waypoint x="1258" y="1303" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MF_OpenAIPlatformResponse_di" bpmnElement="MF_OpenAIPlatformResponse">
+        <di:waypoint x="1743" y="1303" />
+        <di:waypoint x="1529" y="1303" />
+        <di:waypoint x="1529" y="640" />
+        <di:waypoint x="1315" y="640" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Assoc_User_Auth_di" bpmnElement="Assoc_User_Auth">
+        <di:waypoint x="227" y="889" />
+        <di:waypoint x="341" y="889" />
+        <di:waypoint x="341" y="505" />
+        <di:waypoint x="455" y="505" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Assoc_Provider_Readiness_di" bpmnElement="Assoc_Provider_Readiness">
+        <di:waypoint x="342" y="889" />
+        <di:waypoint x="559" y="889" />
+        <di:waypoint x="559" y="640" />
+        <di:waypoint x="777" y="640" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Assoc_Verification_Readiness_di" bpmnElement="Assoc_Verification_Readiness">
+        <di:waypoint x="457" y="889" />
+        <di:waypoint x="617" y="889" />
+        <di:waypoint x="617" y="640" />
+        <di:waypoint x="777" y="640" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Assoc_Service_Order_di" bpmnElement="Assoc_Service_Order">
+        <di:waypoint x="572" y="889" />
+        <di:waypoint x="1051" y="889" />
+        <di:waypoint x="1051" y="640" />
+        <di:waypoint x="1530" y="640" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Assoc_Order_OrderSubmission_di" bpmnElement="Assoc_Order_OrderSubmission">
+        <di:waypoint x="687" y="889" />
+        <di:waypoint x="1108" y="889" />
+        <di:waypoint x="1108" y="640" />
+        <di:waypoint x="1530" y="640" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Assoc_Bid_BidWorkflow_di" bpmnElement="Assoc_Bid_BidWorkflow">
+        <di:waypoint x="802" y="889" />
+        <di:waypoint x="1331" y="889" />
+        <di:waypoint x="1331" y="640" />
+        <di:waypoint x="1860" y="640" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Assoc_Conversation_Fulfillment_di" bpmnElement="Assoc_Conversation_Fulfillment">
+        <di:waypoint x="917" y="889" />
+        <di:waypoint x="1663" y="889" />
+        <di:waypoint x="1663" y="640" />
+        <di:waypoint x="2410" y="640" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Assoc_Complaint_Moderation_di" bpmnElement="Assoc_Complaint_Moderation">
+        <di:waypoint x="1032" y="889" />
+        <di:waypoint x="1886" y="889" />
+        <di:waypoint x="1886" y="747" />
+        <di:waypoint x="2740" y="747" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Assoc_Review_Rating_di" bpmnElement="Assoc_Review_Rating">
+        <di:waypoint x="1147" y="889" />
+        <di:waypoint x="1943" y="889" />
+        <di:waypoint x="1943" y="592" />
+        <di:waypoint x="2740" y="592" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Assoc_Notification_Audit_di" bpmnElement="Assoc_Notification_Audit">
+        <di:waypoint x="1310" y="889" />
+        <di:waypoint x="1995" y="825" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Assoc_Knowledge_Rag_di" bpmnElement="Assoc_Knowledge_Rag">
+        <di:waypoint x="1377" y="889" />
+        <di:waypoint x="1346" y="889" />
+        <di:waypoint x="1346" y="640" />
+        <di:waypoint x="1315" y="640" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Assoc_Assistant_Rag_di" bpmnElement="Assoc_Assistant_Rag">
+        <di:waypoint x="1492" y="889" />
+        <di:waypoint x="1403" y="889" />
+        <di:waypoint x="1403" y="640" />
+        <di:waypoint x="1315" y="640" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Assoc_Postgres_Data_di" bpmnElement="Assoc_Postgres_Data">
+        <di:waypoint x="1702" y="889" />
+        <di:waypoint x="1781" y="889" />
+        <di:waypoint x="1781" y="640" />
+        <di:waypoint x="1860" y="640" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Assoc_Media_Knowledge_di" bpmnElement="Assoc_Media_Knowledge">
+        <di:waypoint x="1857" y="889" />
+        <di:waypoint x="1586" y="889" />
+        <di:waypoint x="1586" y="640" />
+        <di:waypoint x="1315" y="640" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Assoc_Vector_Knowledge_di" bpmnElement="Assoc_Vector_Knowledge">
+        <di:waypoint x="2012" y="889" />
+        <di:waypoint x="1663" y="889" />
+        <di:waypoint x="1663" y="640" />
+        <di:waypoint x="1315" y="640" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Assoc_Cache_Knowledge_di" bpmnElement="Assoc_Cache_Knowledge">
+        <di:waypoint x="2167" y="889" />
+        <di:waypoint x="1741" y="889" />
+        <di:waypoint x="1741" y="640" />
+        <di:waypoint x="1315" y="640" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Assoc_NoPayment_Earnings_di" bpmnElement="Assoc_NoPayment_Earnings">
+        <di:waypoint x="2405" y="877" />
+        <di:waypoint x="2572" y="877" />
+        <di:waypoint x="2572" y="662" />
+        <di:waypoint x="2740" y="662" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Assoc_Audit_Notifications_di" bpmnElement="Assoc_Audit_Notifications">
+        <di:waypoint x="2710" y="877" />
+        <di:waypoint x="1995" y="825" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Assoc_Expiry_Bid_di" bpmnElement="Assoc_Expiry_Bid">
+        <di:waypoint x="2820" y="877" />
+        <di:waypoint x="2340" y="877" />
+        <di:waypoint x="2340" y="640" />
+        <di:waypoint x="1860" y="640" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

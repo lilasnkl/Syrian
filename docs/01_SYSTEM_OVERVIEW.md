@@ -18,6 +18,8 @@ Syrian Services is a marketplace platform connecting customers with service prov
 - Messaging and notifications
 - Reviews and disputes/complaints
 - Admin and moderation operations
+- AI-powered customer assistant with RAG-based knowledge base
+- Provider knowledge management and document ingestion
 
 ## Non-Functional Goals
 - Maintainable modular architecture

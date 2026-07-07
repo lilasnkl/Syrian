@@ -16,6 +16,8 @@ frontend/src/
     complaints/
     reviews/
     notifications/
+    knowledge/
+    customer-assistant/
     admin/
   api/
   components/
@@ -61,5 +63,5 @@ frontend/src/
 1. Add architecture scaffolding and API client.
 2. Refactor route guards and route config.
 3. Migrate auth first.
-4. Migrate domains in order: providers, services, orders, bids, chat, reviews, complaints, notifications, admin.
+4. Migrate domains in order: providers, services, orders, bids, chat, reviews, complaints, notifications, knowledge, customer-assistant, admin.
 5. Remove mock data/store branches after backend parity.

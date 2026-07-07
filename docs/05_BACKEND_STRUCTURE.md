@@ -15,6 +15,8 @@ backend/
     complaints/
     reviews/
     notifications/
+    knowledge/
+    customer_assistant/
     admin_panel/
   shared/
     exceptions/

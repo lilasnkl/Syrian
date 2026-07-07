@@ -1,0 +1,472 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="3100" height="1400" viewBox="0 0 3100 1400">
+<defs>
+<marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#334155"/></marker>
+<marker id="messageArrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#2563eb"/></marker>
+<style><![CDATA[text{font-family:Arial,Helvetica,sans-serif;fill:#0f172a}.label{font-size:12px}.small{font-size:10px;fill:#475569}.pool{fill:#f8fafc;stroke:#334155;stroke-width:1.5}.lane{fill:#ffffff;stroke:#94a3b8;stroke-width:1}.task{fill:#ffffff;stroke:#334155;stroke-width:1.4}.sub{fill:#eef6ff;stroke:#1d4ed8;stroke-width:1.4}.event{fill:#ffffff;stroke:#0f172a;stroke-width:1.5}.end{stroke-width:3}.gateway{fill:#fff7ed;stroke:#c2410c;stroke-width:1.4}.data{fill:#f1f5f9;stroke:#475569}.store{fill:#ecfdf5;stroke:#047857}.anno{fill:#fff;stroke:#64748b;stroke-dasharray:4 3}.seq{fill:none;stroke:#334155;stroke-width:1.3;marker-end:url(#arrow)}.msg{fill:none;stroke:#2563eb;stroke-width:1.2;stroke-dasharray:8 5;marker-end:url(#messageArrow)}.assoc{fill:none;stroke:#64748b;stroke-width:1;stroke-dasharray:3 3}]]></style>
+</defs>
+<rect width="100%" height="100%" fill="#ffffff"/>
+<rect x="70" y="40" width="2920" height="140" rx="4" ry="4" class="pool"/>
+<text x="78" y="58" class="label" font-weight="600">Customer</text>
+<rect x="70" y="200" width="2920" height="155" rx="4" ry="4" class="pool"/>
+<text x="78" y="218" class="label" font-weight="600">Provider</text>
+<rect x="70" y="380" width="2920" height="535" rx="4" ry="4" class="pool"/>
+<text x="78" y="398" class="label" font-weight="600">Platform</text>
+<rect x="70" y="940" width="2920" height="155" rx="4" ry="4" class="pool"/>
+<text x="78" y="958" class="label" font-weight="600">Admin</text>
+<rect x="70" y="1120" width="2920" height="105" rx="4" ry="4" class="pool"/>
+<text x="78" y="1138" class="label" font-weight="600">Ollama</text>
+<rect x="70" y="1245" width="2920" height="120" rx="4" ry="4" class="pool"/>
+<text x="78" y="1263" class="label" font-weight="600">OpenAI</text>
+<rect x="100" y="380" width="2890" height="75" rx="4" ry="4" class="lane"/>
+<text x="108" y="398" class="label" font-weight="600">Frontend</text>
+<rect x="100" y="455" width="2890" height="95" rx="4" ry="4" class="lane"/>
+<text x="108" y="473" class="label" font-weight="600">AuthApi</text>
+<rect x="100" y="550" width="2890" height="245" rx="4" ry="4" class="lane"/>
+<text x="108" y="568" class="label" font-weight="600">Domain</text>
+<rect x="100" y="795" width="2890" height="65" rx="4" ry="4" class="lane"/>
+<text x="108" y="813" class="label" font-weight="600">Worker</text>
+<rect x="100" y="860" width="2890" height="55" rx="4" ry="4" class="lane"/>
+<text x="108" y="878" class="label" font-weight="600">Data</text>
+<polyline points="166,108 210,103" class="seq"/>
+<polyline points="330,103 390,103" class="seq"/>
+<polyline points="540,103 610,103" class="seq"/>
+<text x="614" y="99" class="small">needs provider facts</text>
+<polyline points="745,103 805,103" class="seq"/>
+<polyline points="935,103 990,103" class="seq"/>
+<polyline points="1120,103 1180,105" class="seq"/>
+<polyline points="1235,105 1305,103" class="seq"/>
+<text x="1309" y="99" class="small">yes</text>
+<polyline points="1235,105 1305,158" class="seq"/>
+<text x="1309" y="154" class="small">no</text>
+<polyline points="1450,158 1510,156" class="seq"/>
+<polyline points="1425,103 1495,103" class="seq"/>
+<polyline points="1630,103 1690,105" class="seq"/>
+<polyline points="1745,105 1825,103" class="seq"/>
+<text x="1829" y="99" class="small">completed</text>
+<polyline points="1745,105 1825,158" class="seq"/>
+<text x="1829" y="154" class="small">disputed</text>
+<polyline points="1945,158 2025,156" class="seq"/>
+<polyline points="1945,103 2025,105" class="seq"/>
+<polyline points="166,278 210,273" class="seq"/>
+<polyline points="330,273 390,273" class="seq"/>
+<polyline points="530,273 590,276" class="seq"/>
+<polyline points="632,276 690,275" class="seq"/>
+<polyline points="745,275 810,273" class="seq"/>
+<text x="814" y="269" class="small">approved</text>
+<polyline points="745,275 815,325" class="seq"/>
+<text x="819" y="321" class="small">rejected/revoked</text>
+<polyline points="965,273 1035,273" class="seq"/>
+<polyline points="1175,273 1235,276" class="seq"/>
+<polyline points="1277,276 1345,273" class="seq"/>
+<polyline points="1460,273 1525,275" class="seq"/>
+<polyline points="1580,275 1640,273" class="seq"/>
+<text x="1644" y="269" class="small">accepted</text>
+<polyline points="1580,275 1640,325" class="seq"/>
+<text x="1644" y="321" class="small">not accepted</text>
+<polyline points="1765,273 1835,273" class="seq"/>
+<polyline points="1960,273 2030,275" class="seq"/>
+<polyline points="166,1018 210,1013" class="seq"/>
+<polyline points="345,1013 420,1013" class="seq"/>
+<polyline points="570,1013 640,1015" class="seq"/>
+<polyline points="695,1015 760,985" class="seq"/>
+<text x="764" y="981" class="small">yes</text>
+<polyline points="695,1015 760,1050" class="seq"/>
+<text x="764" y="1046" class="small">no/revoke</text>
+<polyline points="890,985 960,1013" class="seq"/>
+<polyline points="890,1050 960,1013" class="seq"/>
+<polyline points="1090,1013 1165,1013" class="seq"/>
+<polyline points="1310,1013 1385,1015" class="seq"/>
+<polyline points="166,420 205,417" class="seq"/>
+<polyline points="270,417 362,417 362,505 455,505" class="seq"/>
+<polyline points="530,505 575,505" class="seq"/>
+<polyline points="630,505 590,441" class="seq"/>
+<text x="594" y="437" class="small">no</text>
+<polyline points="602,505 689,505 689,640 777,640" class="seq"/>
+<text x="693" y="636" class="small">yes</text>
+<polyline points="855,640 900,637" class="seq"/>
+<polyline points="955,637 915,716" class="seq"/>
+<text x="919" y="712" class="small">no</text>
+<polyline points="955,637 1025,640" class="seq"/>
+<text x="1029" y="636" class="small">yes/not applicable</text>
+<polyline points="1175,640 1240,640" class="seq"/>
+<text x="1244" y="636" class="small">optional question</text>
+<polyline points="1390,640 1455,640" class="seq"/>
+<polyline points="1605,640 1660,637" class="seq"/>
+<polyline points="1715,637 1675,716" class="seq"/>
+<text x="1679" y="712" class="small">no</text>
+<polyline points="1715,637 1785,640" class="seq"/>
+<text x="1789" y="636" class="small">yes</text>
+<polyline points="1860,640 1966,640 1966,825 2072,825" class="seq"/>
+<polyline points="2072,825 2154,825 2154,637 2237,637" class="seq"/>
+<polyline points="2265,637 2225,716" class="seq"/>
+<text x="2229" y="712" class="small">no</text>
+<polyline points="2265,637 2335,640" class="seq"/>
+<text x="2339" y="636" class="small">yes</text>
+<polyline points="2485,640 2545,637" class="seq"/>
+<polyline points="2600,637 2665,592" class="seq"/>
+<text x="2669" y="588" class="small">completed</text>
+<polyline points="2815,592 2665,662" class="seq"/>
+<polyline points="2815,662 2885,663" class="seq"/>
+<polyline points="2572,637 2627,637 2627,838 2683,838" class="seq"/>
+<text x="2631" y="834" class="small">cancelled</text>
+<polyline points="2572,637 2656,637 2656,747 2740,747" class="seq"/>
+<text x="2660" y="743" class="small">disputed</text>
+<polyline points="2815,747 2885,748" class="seq"/>
+<polyline points="1156,1173 1210,1170" class="seq"/>
+<polyline points="1360,1170 1420,1173" class="seq"/>
+<polyline points="1276,1303 1330,1300" class="seq"/>
+<polyline points="1460,1300 1515,1300" class="seq"/>
+<polyline points="1670,1300 1725,1303" class="seq"/>
+<polyline points="227,889 341,889 341,505 455,505" class="assoc"/>
+<polyline points="342,889 559,889 559,640 777,640" class="assoc"/>
+<polyline points="457,889 617,889 617,640 777,640" class="assoc"/>
+<polyline points="572,889 1051,889 1051,640 1530,640" class="assoc"/>
+<polyline points="687,889 1108,889 1108,640 1530,640" class="assoc"/>
+<polyline points="802,889 1331,889 1331,640 1860,640" class="assoc"/>
+<polyline points="917,889 1663,889 1663,640 2410,640" class="assoc"/>
+<polyline points="1032,889 1886,889 1886,747 2740,747" class="assoc"/>
+<polyline points="1147,889 1943,889 1943,592 2740,592" class="assoc"/>
+<polyline points="1310,889 1995,825" class="assoc"/>
+<polyline points="1377,889 1346,889 1346,640 1315,640" class="assoc"/>
+<polyline points="1492,889 1403,889 1403,640 1315,640" class="assoc"/>
+<polyline points="1702,889 1781,889 1781,640 1860,640" class="assoc"/>
+<polyline points="1857,889 1586,889 1586,640 1315,640" class="assoc"/>
+<polyline points="2012,889 1663,889 1663,640 1315,640" class="assoc"/>
+<polyline points="2167,889 1741,889 1741,640 1315,640" class="assoc"/>
+<polyline points="2405,877 2572,877 2572,662 2740,662" class="assoc"/>
+<polyline points="2710,877 1995,825" class="assoc"/>
+<polyline points="2820,877 2340,877 2340,640 1860,640" class="assoc"/>
+<polyline points="870,103 509,103 509,420 148,420" class="msg"/>
+<polyline points="677,103 996,103 996,640 1315,640" class="msg"/>
+<polyline points="2072,825 1563,825 1563,103 1055,103" class="msg"/>
+<polyline points="1365,103 1612,103 1612,640 1860,640" class="msg"/>
+<polyline points="1377,158 1618,158 1618,640 1860,640" class="msg"/>
+<polyline points="1885,158 2312,158 2312,747 2740,747" class="msg"/>
+<polyline points="460,273 618,273 618,640 777,640" class="msg"/>
+<polyline points="777,640 694,640 694,276 611,276" class="msg"/>
+<polyline points="1105,273 1210,273 1210,640 1315,640" class="msg"/>
+<polyline points="2072,825 1664,825 1664,276 1256,276" class="msg"/>
+<polyline points="1402,273 1631,273 1631,640 1860,640" class="msg"/>
+<polyline points="2072,825 1812,825 1812,275 1552,275" class="msg"/>
+<polyline points="1897,273 2153,273 2153,640 2410,640" class="msg"/>
+<polyline points="2072,825 1110,825 1110,1018 148,1018" class="msg"/>
+<polyline points="495,1013 636,1013 636,640 777,640" class="msg"/>
+<polyline points="1025,1013 1882,1013 1882,747 2740,747" class="msg"/>
+<polyline points="1100,640 1119,640 1119,1173 1138,1173" class="msg"/>
+<polyline points="1438,1173 1269,1173 1269,640 1100,640" class="msg"/>
+<polyline points="1315,640 1286,640 1286,1303 1258,1303" class="msg"/>
+<polyline points="1743,1303 1529,1303 1529,640 1315,640" class="msg"/>
+<circle cx="148" cy="108" r="18" class="event"/>
+<text x="105" y="140" class="small" font-size="10">Service need</text>
+<text x="105" y="153" class="small" font-size="10">identified</text>
+<rect x="210" y="78" width="120" height="50" rx="4" ry="4" class="task"/>
+<text x="218" y="95" class="label" font-size="12">Register or sign</text>
+<text x="218" y="110" class="label" font-size="12">in</text>
+<rect x="390" y="78" width="150" height="50" rx="4" ry="4" class="task"/>
+<text x="398" y="95" class="label" font-size="12">Search providers,</text>
+<text x="398" y="110" class="label" font-size="12">services, or ask AI</text>
+<text x="398" y="125" class="label" font-size="12">recommendation</text>
+<rect x="610" y="78" width="135" height="50" rx="4" ry="4" class="task"/>
+<text x="618" y="95" class="label" font-size="12">Ask provider</text>
+<text x="618" y="110" class="label" font-size="12">knowledge question</text>
+<rect x="805" y="78" width="130" height="50" rx="4" ry="4" class="task"/>
+<text x="813" y="95" class="label" font-size="12">Submit service</text>
+<text x="813" y="110" class="label" font-size="12">request</text>
+<rect x="990" y="78" width="130" height="50" rx="4" ry="4" class="task"/>
+<text x="998" y="95" class="label" font-size="12">Review provider</text>
+<text x="998" y="110" class="label" font-size="12">offers</text>
+<polygon points="1207,78 1235,105 1207,133 1180,105" class="gateway"/>
+<text x="1203" y="109" class="label">X</text>
+<text x="1145" y="146" class="small" font-size="10">Accept an offer?</text>
+<rect x="1305" y="78" width="120" height="50" rx="4" ry="4" class="task"/>
+<text x="1313" y="95" class="label" font-size="12">Accept selected</text>
+<text x="1313" y="110" class="label" font-size="12">offer</text>
+<rect x="1305" y="133" width="145" height="50" rx="4" ry="4" class="task"/>
+<text x="1313" y="150" class="label" font-size="12">Reject offers or</text>
+<text x="1313" y="165" class="label" font-size="12">cancel request</text>
+<rect x="1495" y="78" width="135" height="50" rx="4" ry="4" class="task"/>
+<text x="1503" y="95" class="label" font-size="12">Chat and track in-</text>
+<text x="1503" y="110" class="label" font-size="12">progress work</text>
+<polygon points="1717,78 1745,105 1717,133 1690,105" class="gateway"/>
+<text x="1713" y="109" class="label">X</text>
+<text x="1655" y="146" class="small" font-size="10">Was work acceptable?</text>
+<rect x="1825" y="133" width="120" height="50" rx="4" ry="4" class="task"/>
+<text x="1833" y="150" class="label" font-size="12">Submit complaint</text>
+<rect x="1825" y="78" width="120" height="50" rx="4" ry="4" class="task"/>
+<text x="1833" y="95" class="label" font-size="12">Create completed-</text>
+<text x="1833" y="110" class="label" font-size="12">order review</text>
+<circle cx="2043" cy="105" r="18" class="event end"/>
+<text x="2000" y="137" class="small" font-size="10">Service completed</text>
+<text x="2000" y="150" class="small" font-size="10">and reviewed</text>
+<circle cx="1528" cy="156" r="18" class="event end"/>
+<text x="1485" y="188" class="small" font-size="10">Request cancelled</text>
+<text x="1485" y="201" class="small" font-size="10">or no offer</text>
+<text x="1485" y="214" class="small" font-size="10">accepted</text>
+<circle cx="2043" cy="156" r="18" class="event end"/>
+<text x="2000" y="188" class="small" font-size="10">Complaint</text>
+<text x="2000" y="201" class="small" font-size="10">submitted</text>
+<circle cx="148" cy="278" r="18" class="event"/>
+<text x="105" y="310" class="small" font-size="10">Provider joins</text>
+<text x="105" y="323" class="small" font-size="10">marketplace</text>
+<rect x="210" y="248" width="120" height="50" rx="4" ry="4" class="task"/>
+<text x="218" y="265" class="label" font-size="12">Register or sign</text>
+<text x="218" y="280" class="label" font-size="12">in as provider</text>
+<rect x="390" y="248" width="140" height="50" rx="4" ry="4" class="task"/>
+<text x="398" y="265" class="label" font-size="12">Submit verification</text>
+<text x="398" y="280" class="label" font-size="12">evidence</text>
+<circle cx="611" cy="276" r="21" class="event"/>
+<text x="565" y="311" class="small" font-size="10">Verification</text>
+<text x="565" y="324" class="small" font-size="10">result received</text>
+<polygon points="717,248 745,275 717,303 690,275" class="gateway"/>
+<text x="713" y="279" class="label">X</text>
+<text x="655" y="316" class="small" font-size="10">Was provider verified?</text>
+<rect x="810" y="248" width="155" height="50" rx="4" ry="4" class="task"/>
+<text x="818" y="265" class="label" font-size="12">Manage profile and</text>
+<text x="818" y="280" class="label" font-size="12">service listings</text>
+<rect x="1035" y="248" width="140" height="50" rx="4" ry="4" class="task"/>
+<text x="1043" y="265" class="label" font-size="12">Upload provider</text>
+<text x="1043" y="280" class="label" font-size="12">knowledge source</text>
+<circle cx="1256" cy="276" r="21" class="event"/>
+<text x="1210" y="311" class="small" font-size="10">Eligible request</text>
+<text x="1210" y="324" class="small" font-size="10">available</text>
+<rect x="1345" y="248" width="115" height="50" rx="4" ry="4" class="task"/>
+<text x="1353" y="265" class="label" font-size="12">Submit offer</text>
+<polygon points="1552,248 1580,275 1552,303 1525,275" class="gateway"/>
+<text x="1548" y="279" class="label">X</text>
+<text x="1490" y="316" class="small" font-size="10">Was offer accepted?</text>
+<rect x="1640" y="248" width="125" height="50" rx="4" ry="4" class="task"/>
+<text x="1648" y="265" class="label" font-size="12">Perform accepted</text>
+<text x="1648" y="280" class="label" font-size="12">service</text>
+<rect x="1835" y="248" width="125" height="50" rx="4" ry="4" class="task"/>
+<text x="1843" y="265" class="label" font-size="12">Mark order</text>
+<text x="1843" y="280" class="label" font-size="12">completed</text>
+<circle cx="2048" cy="275" r="18" class="event end"/>
+<text x="2005" y="307" class="small" font-size="10">Provider job</text>
+<text x="2005" y="320" class="small" font-size="10">completed</text>
+<circle cx="833" cy="325" r="18" class="event end"/>
+<text x="790" y="357" class="small" font-size="10">Verification</text>
+<text x="790" y="370" class="small" font-size="10">rejected or</text>
+<text x="790" y="383" class="small" font-size="10">revoked</text>
+<circle cx="1658" cy="325" r="18" class="event end"/>
+<text x="1615" y="357" class="small" font-size="10">Offer rejected or</text>
+<text x="1615" y="370" class="small" font-size="10">withdrawn</text>
+<circle cx="148" cy="1018" r="18" class="event"/>
+<text x="105" y="1050" class="small" font-size="10">Admin queue</text>
+<text x="105" y="1063" class="small" font-size="10">notification</text>
+<text x="105" y="1076" class="small" font-size="10">received</text>
+<rect x="210" y="988" width="135" height="50" rx="4" ry="4" class="task"/>
+<text x="218" y="1005" class="label" font-size="12">Review dashboard</text>
+<text x="218" y="1020" class="label" font-size="12">metrics and queues</text>
+<rect x="420" y="988" width="150" height="50" rx="4" ry="4" class="task"/>
+<text x="428" y="1005" class="label" font-size="12">Approve, reject, or</text>
+<text x="428" y="1020" class="label" font-size="12">revoke verification</text>
+<polygon points="667,988 695,1015 667,1043 640,1015" class="gateway"/>
+<text x="663" y="1019" class="label">X</text>
+<text x="605" y="1056" class="small" font-size="10">Approve provider?</text>
+<rect x="760" y="960" width="130" height="50" rx="4" ry="4" class="task"/>
+<text x="768" y="977" class="label" font-size="12">Approve provider</text>
+<text x="768" y="992" class="label" font-size="12">verification</text>
+<rect x="760" y="1025" width="130" height="50" rx="4" ry="4" class="task"/>
+<text x="768" y="1042" class="label" font-size="12">Reject or revoke</text>
+<text x="768" y="1057" class="label" font-size="12">verification</text>
+<rect x="960" y="988" width="130" height="50" rx="4" ry="4" class="task"/>
+<text x="968" y="1005" class="label" font-size="12">Respond to</text>
+<text x="968" y="1020" class="label" font-size="12">complaint</text>
+<rect x="1165" y="988" width="145" height="50" rx="4" ry="4" class="task"/>
+<text x="1173" y="1005" class="label" font-size="12">Block account or</text>
+<text x="1173" y="1020" class="label" font-size="12">record moderation</text>
+<text x="1173" y="1035" class="label" font-size="12">action</text>
+<circle cx="1403" cy="1015" r="18" class="event end"/>
+<text x="1360" y="1047" class="small" font-size="10">Admin queue</text>
+<text x="1360" y="1060" class="small" font-size="10">handled</text>
+<circle cx="148" cy="420" r="18" class="event"/>
+<text x="105" y="452" class="small" font-size="10">Marketplace</text>
+<text x="105" y="465" class="small" font-size="10">request received</text>
+<rect x="205" y="392" width="130" height="50" rx="4" ry="4" class="task"/>
+<text x="213" y="409" class="label" font-size="12">Route action</text>
+<text x="213" y="424" class="label" font-size="12">through React SPA</text>
+<rect x="380" y="478" width="150" height="55" rx="4" ry="4" class="sub"/>
+<text x="388" y="495" class="label" font-size="12">Authenticate session</text>
+<text x="388" y="510" class="label" font-size="12">and check active</text>
+<text x="388" y="525" class="label" font-size="12">account</text>
+<text x="512" y="525" class="small">+</text>
+<polygon points="602,478 630,505 602,533 575,505" class="gateway"/>
+<text x="598" y="509" class="label">X</text>
+<text x="540" y="546" class="small" font-size="10">Is actor authorized?</text>
+<circle cx="608" cy="441" r="18" class="event end"/>
+<text x="565" y="473" class="small" font-size="10">Authentication or</text>
+<text x="565" y="486" class="small" font-size="10">account status</text>
+<text x="565" y="499" class="small" font-size="10">failed</text>
+<rect x="700" y="610" width="155" height="60" rx="4" ry="4" class="sub"/>
+<text x="708" y="627" class="label" font-size="12">Verify provider and</text>
+<text x="708" y="642" class="label" font-size="12">publish services</text>
+<text x="837" y="662" class="small">+</text>
+<polygon points="927,610 955,637 927,665 900,637" class="gateway"/>
+<text x="923" y="641" class="label">X</text>
+<text x="865" y="678" class="small" font-size="10">Is provider approved or</text>
+<text x="865" y="691" class="small" font-size="10">not required?</text>
+<circle cx="933" cy="716" r="18" class="event end"/>
+<text x="890" y="748" class="small" font-size="10">Provider cannot</text>
+<text x="890" y="761" class="small" font-size="10">publish verified</text>
+<text x="890" y="774" class="small" font-size="10">work</text>
+<rect x="1025" y="610" width="150" height="60" rx="4" ry="4" class="sub"/>
+<text x="1033" y="627" class="label" font-size="12">Support discovery and</text>
+<text x="1033" y="642" class="label" font-size="12">AI recommendation</text>
+<text x="1157" y="662" class="small">+</text>
+<rect x="1240" y="610" width="150" height="60" rx="4" ry="4" class="sub"/>
+<text x="1248" y="627" class="label" font-size="12">Answer provider</text>
+<text x="1248" y="642" class="label" font-size="12">knowledge question</text>
+<text x="1372" y="662" class="small">+</text>
+<rect x="1455" y="610" width="150" height="60" rx="4" ry="4" class="sub"/>
+<text x="1463" y="627" class="label" font-size="12">Create customer</text>
+<text x="1463" y="642" class="label" font-size="12">service request</text>
+<text x="1587" y="662" class="small">+</text>
+<polygon points="1687,610 1715,637 1687,665 1660,637" class="gateway"/>
+<text x="1683" y="641" class="label">X</text>
+<text x="1625" y="678" class="small" font-size="10">Is request valid and</text>
+<text x="1625" y="691" class="small" font-size="10">visible?</text>
+<circle cx="1693" cy="716" r="18" class="event end"/>
+<text x="1650" y="748" class="small" font-size="10">Request</text>
+<text x="1650" y="761" class="small" font-size="10">validation failed</text>
+<rect x="1785" y="610" width="150" height="60" rx="4" ry="4" class="sub"/>
+<text x="1793" y="627" class="label" font-size="12">Manage provider offers</text>
+<text x="1793" y="642" class="label" font-size="12">and selection</text>
+<text x="1917" y="662" class="small">+</text>
+<rect x="1995" y="800" width="155" height="50" rx="4" ry="4" class="sub"/>
+<text x="2003" y="817" class="label" font-size="12">Create notifications</text>
+<text x="2003" y="832" class="label" font-size="12">and status history</text>
+<text x="2132" y="842" class="small">+</text>
+<polygon points="2237,610 2265,637 2237,665 2210,637" class="gateway"/>
+<text x="2233" y="641" class="label">X</text>
+<text x="2175" y="678" class="small" font-size="10">Was an offer accepted?</text>
+<circle cx="2243" cy="716" r="18" class="event end"/>
+<text x="2200" y="748" class="small" font-size="10">Request cancelled</text>
+<text x="2200" y="761" class="small" font-size="10">or left open</text>
+<rect x="2335" y="610" width="150" height="60" rx="4" ry="4" class="sub"/>
+<text x="2343" y="627" class="label" font-size="12">Coordinate work and</text>
+<text x="2343" y="642" class="label" font-size="12">chat</text>
+<text x="2467" y="662" class="small">+</text>
+<polygon points="2572,610 2600,637 2572,665 2545,637" class="gateway"/>
+<text x="2568" y="641" class="label">X</text>
+<text x="2510" y="678" class="small" font-size="10">Completed, cancelled, or</text>
+<text x="2510" y="691" class="small" font-size="10">disputed?</text>
+<rect x="2665" y="565" width="150" height="55" rx="4" ry="4" class="sub"/>
+<text x="2673" y="582" class="label" font-size="12">Record review and</text>
+<text x="2673" y="597" class="label" font-size="12">refresh provider</text>
+<text x="2673" y="612" class="label" font-size="12">rating</text>
+<text x="2797" y="612" class="small">+</text>
+<rect x="2665" y="635" width="150" height="55" rx="4" ry="4" class="task"/>
+<text x="2673" y="652" class="label" font-size="12">Calculate earnings and</text>
+<text x="2673" y="667" class="label" font-size="12">dashboard metrics</text>
+<rect x="2665" y="720" width="150" height="55" rx="4" ry="4" class="sub"/>
+<text x="2673" y="737" class="label" font-size="12">Resolve complaint or</text>
+<text x="2673" y="752" class="label" font-size="12">escalation</text>
+<text x="2797" y="767" class="small">+</text>
+<circle cx="2903" cy="663" r="18" class="event end"/>
+<text x="2860" y="695" class="small" font-size="10">Request completed</text>
+<circle cx="2683" cy="838" r="18" class="event end"/>
+<text x="2640" y="870" class="small" font-size="10">Request cancelled</text>
+<circle cx="2903" cy="748" r="18" class="event end"/>
+<text x="2860" y="780" class="small" font-size="10">Complaint</text>
+<text x="2860" y="793" class="small" font-size="10">resolved or</text>
+<text x="2860" y="806" class="small" font-size="10">escalated</text>
+<circle cx="1138" cy="1173" r="18" class="event"/>
+<text x="1095" y="1205" class="small" font-size="10">Problem analysis</text>
+<text x="1095" y="1218" class="small" font-size="10">requested</text>
+<rect x="1210" y="1145" width="150" height="50" rx="4" ry="4" class="task"/>
+<text x="1218" y="1162" class="label" font-size="12">Analyze problem with</text>
+<text x="1218" y="1177" class="label" font-size="12">Ollama model</text>
+<circle cx="1438" cy="1173" r="18" class="event end"/>
+<text x="1395" y="1205" class="small" font-size="10">Structured</text>
+<text x="1395" y="1218" class="small" font-size="10">recommendation</text>
+<text x="1395" y="1231" class="small" font-size="10">returned</text>
+<circle cx="1258" cy="1303" r="18" class="event"/>
+<text x="1215" y="1335" class="small" font-size="10">OpenAI request</text>
+<text x="1215" y="1348" class="small" font-size="10">received</text>
+<rect x="1330" y="1275" width="130" height="50" rx="4" ry="4" class="task"/>
+<text x="1338" y="1292" class="label" font-size="12">Create embeddings</text>
+<rect x="1515" y="1275" width="155" height="50" rx="4" ry="4" class="task"/>
+<text x="1523" y="1292" class="label" font-size="12">Generate structured</text>
+<text x="1523" y="1307" class="label" font-size="12">grounded answer</text>
+<circle cx="1743" cy="1303" r="18" class="event end"/>
+<text x="1700" y="1335" class="small" font-size="10">OpenAI result</text>
+<text x="1700" y="1348" class="small" font-size="10">returned</text>
+<path d="M180,872 h85 l10,10 v24 h-95 z" class="data"/>
+<path d="M265,872 v10 h10" fill="none" stroke="#475569"/>
+<text x="185" y="885" class="small" font-size="9">User account,</text>
+<text x="185" y="897" class="small" font-size="9">role, and status</text>
+<path d="M295,872 h85 l10,10 v24 h-95 z" class="data"/>
+<path d="M380,872 v10 h10" fill="none" stroke="#475569"/>
+<text x="300" y="885" class="small" font-size="9">Provider profile</text>
+<path d="M410,872 h85 l10,10 v24 h-95 z" class="data"/>
+<path d="M495,872 v10 h10" fill="none" stroke="#475569"/>
+<text x="415" y="885" class="small" font-size="9">Verification</text>
+<text x="415" y="897" class="small" font-size="9">request and files</text>
+<path d="M525,872 h85 l10,10 v24 h-95 z" class="data"/>
+<path d="M610,872 v10 h10" fill="none" stroke="#475569"/>
+<text x="530" y="885" class="small" font-size="9">Service listing</text>
+<path d="M640,872 h85 l10,10 v24 h-95 z" class="data"/>
+<path d="M725,872 v10 h10" fill="none" stroke="#475569"/>
+<text x="645" y="885" class="small" font-size="9">Order and status</text>
+<text x="645" y="897" class="small" font-size="9">history</text>
+<path d="M755,872 h85 l10,10 v24 h-95 z" class="data"/>
+<path d="M840,872 v10 h10" fill="none" stroke="#475569"/>
+<text x="760" y="885" class="small" font-size="9">Bid and bid</text>
+<text x="760" y="897" class="small" font-size="9">status history</text>
+<path d="M870,872 h85 l10,10 v24 h-95 z" class="data"/>
+<path d="M955,872 v10 h10" fill="none" stroke="#475569"/>
+<text x="875" y="885" class="small" font-size="9">Conversation and</text>
+<text x="875" y="897" class="small" font-size="9">messages</text>
+<path d="M985,872 h85 l10,10 v24 h-95 z" class="data"/>
+<path d="M1070,872 v10 h10" fill="none" stroke="#475569"/>
+<text x="990" y="885" class="small" font-size="9">Complaint,</text>
+<text x="990" y="897" class="small" font-size="9">response, action</text>
+<text x="990" y="909" class="small" font-size="9">log</text>
+<path d="M1100,872 h85 l10,10 v24 h-95 z" class="data"/>
+<path d="M1185,872 v10 h10" fill="none" stroke="#475569"/>
+<text x="1105" y="885" class="small" font-size="9">Review and rating</text>
+<text x="1105" y="897" class="small" font-size="9">aggregate</text>
+<path d="M1215,872 h85 l10,10 v24 h-95 z" class="data"/>
+<path d="M1300,872 v10 h10" fill="none" stroke="#475569"/>
+<text x="1220" y="885" class="small" font-size="9">Notification</text>
+<path d="M1330,872 h85 l10,10 v24 h-95 z" class="data"/>
+<path d="M1415,872 v10 h10" fill="none" stroke="#475569"/>
+<text x="1335" y="885" class="small" font-size="9">Knowledge source,</text>
+<text x="1335" y="897" class="small" font-size="9">document, chunk</text>
+<path d="M1445,872 h85 l10,10 v24 h-95 z" class="data"/>
+<path d="M1530,872 v10 h10" fill="none" stroke="#475569"/>
+<text x="1450" y="885" class="small" font-size="9">Assistant turn</text>
+<text x="1450" y="897" class="small" font-size="9">and citations</text>
+<path d="M1640,880 C1640,870 1765,870 1765,880 v26 C1765,914 1640,914 1640,906 z" class="store"/>
+<path d="M1640,880 C1640,890 1765,890 1765,880" fill="none" stroke="#047857"/>
+<text x="1648" y="890" class="small" font-size="9">PostgreSQL or SQLite</text>
+<text x="1648" y="902" class="small" font-size="9">database</text>
+<path d="M1795,880 C1795,870 1920,870 1920,880 v26 C1920,914 1795,914 1795,906 z" class="store"/>
+<path d="M1795,880 C1795,890 1920,890 1920,880" fill="none" stroke="#047857"/>
+<text x="1803" y="890" class="small" font-size="9">Django media file</text>
+<text x="1803" y="902" class="small" font-size="9">storage</text>
+<path d="M1950,880 C1950,870 2075,870 2075,880 v26 C2075,914 1950,914 1950,906 z" class="store"/>
+<path d="M1950,880 C1950,890 2075,890 2075,880" fill="none" stroke="#047857"/>
+<text x="1958" y="890" class="small" font-size="9">Postgres JSON or Zvec</text>
+<text x="1958" y="902" class="small" font-size="9">vector index</text>
+<path d="M2105,880 C2105,870 2230,870 2230,880 v26 C2230,914 2105,914 2105,906 z" class="store"/>
+<path d="M2105,880 C2105,890 2230,890 2230,880" fill="none" stroke="#047857"/>
+<text x="2113" y="890" class="small" font-size="9">Django cache for</text>
+<text x="2113" y="902" class="small" font-size="9">embeddings and</text>
+<text x="2113" y="914" class="small" font-size="9">answers</text>
+<rect x="2310" y="850" width="190" height="55" rx="4" ry="4" class="anno"/>
+<text x="2318" y="867" class="label" font-size="12">No payment gateway, checkout,</text>
+<text x="2318" y="882" class="label" font-size="12">refund, or ledger capture was</text>
+<text x="2318" y="897" class="label" font-size="12">found. Earnings are derived</text>
+<text x="2318" y="912" class="label" font-size="12">from accepted bid amounts.</text>
+<rect x="2525" y="850" width="185" height="55" rx="4" ry="4" class="anno"/>
+<text x="2533" y="867" class="label" font-size="12">Status history and complaint</text>
+<text x="2533" y="882" class="label" font-size="12">action logs exist. Security</text>
+<text x="2533" y="897" class="label" font-size="12">docs still list explicit</text>
+<text x="2533" y="912" class="label" font-size="12">audit logging persistence...</text>
+<rect x="2735" y="850" width="170" height="55" rx="4" ry="4" class="anno"/>
+<text x="2743" y="867" class="label" font-size="12">Bid status includes</text>
+<text x="2743" y="882" class="label" font-size="12">expired, but no scheduler</text>
+<text x="2743" y="897" class="label" font-size="12">or expiration transition</text>
+<text x="2743" y="912" class="label" font-size="12">was found.</text>
+</svg>
