@@ -6,12 +6,14 @@ from apps.knowledge.repositories import KnowledgeChunkRepository, KnowledgeSourc
 from apps.knowledge.services.chunking_service import ChunkingService
 from apps.knowledge.services.document_extraction_service import DocumentExtractionService
 from apps.knowledge.services.embedding_service import EmbeddingService
+from apps.knowledge.services.zvec_index_service import ZvecKnowledgeIndexService
 
 
 class KnowledgeIngestionService:
     extraction_service_class = DocumentExtractionService
     chunking_service_class = ChunkingService
     embedding_service_class = EmbeddingService
+    vector_index_service_class = ZvecKnowledgeIndexService
 
     @classmethod
     def process_next_queued(cls):
@@ -46,6 +48,7 @@ class KnowledgeIngestionService:
             source.error_code = ""
             source.error_detail = ""
             source.save(update_fields=["status", "last_indexed_at", "error_code", "error_detail", "updated_at"])
+            transaction.on_commit(lambda source=source: cls.vector_index_service_class.sync_source(source))
             job.status = KnowledgeIngestionJob.STATUS_SUCCEEDED
             job.finished_at = timezone.now()
             job.save(update_fields=["status", "finished_at", "updated_at"])
@@ -61,4 +64,3 @@ class KnowledgeIngestionService:
             job.finished_at = timezone.now()
             job.save(update_fields=["status", "error_code", "error_detail", "finished_at", "updated_at"])
             raise
-

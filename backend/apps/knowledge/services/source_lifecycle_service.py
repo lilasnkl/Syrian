@@ -2,23 +2,27 @@ from django.db import transaction
 
 from apps.knowledge.models import KnowledgeIngestionJob, KnowledgeSource
 from apps.knowledge.repositories import KnowledgeChunkRepository, KnowledgeSourceRepository
+from apps.knowledge.services.zvec_index_service import ZvecKnowledgeIndexService
 from shared.exceptions import PermissionDeniedDomain, ResourceNotFound
 
 
 class SourceLifecycleService:
-    @staticmethod
+    vector_index_service_class = ZvecKnowledgeIndexService
+
+    @classmethod
     @transaction.atomic
-    def archive(*, actor, source_id: int):
-        source = SourceLifecycleService._get_owned_source(actor=actor, source_id=source_id)
+    def archive(cls, *, actor, source_id: int):
+        source = cls._get_owned_source(actor=actor, source_id=source_id)
         source.status = KnowledgeSource.STATUS_ARCHIVED
         source.save(update_fields=["status", "updated_at"])
         KnowledgeChunkRepository.deactivate_source_chunks(source)
+        transaction.on_commit(lambda source=source: cls.vector_index_service_class.sync_source(source))
         return source
 
-    @staticmethod
+    @classmethod
     @transaction.atomic
-    def reindex(*, actor, source_id: int):
-        source = SourceLifecycleService._get_owned_source(actor=actor, source_id=source_id)
+    def reindex(cls, *, actor, source_id: int):
+        source = cls._get_owned_source(actor=actor, source_id=source_id)
         source.status = KnowledgeSource.STATUS_PENDING
         source.error_code = ""
         source.error_detail = ""
@@ -34,4 +38,3 @@ class SourceLifecycleService:
         if actor.role not in {"admin", "moderator"} and source.provider.user_id != actor.id:
             raise PermissionDeniedDomain("Not allowed to manage this knowledge source.")
         return source
-

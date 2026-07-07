@@ -10,6 +10,8 @@ from rest_framework.test import APITestCase
 from apps.accounts.models import User
 from apps.knowledge.models import KnowledgeChunk, KnowledgeDocument, KnowledgeIngestionJob, KnowledgeSource
 from apps.knowledge.services import EmbeddingService, KnowledgeIngestionService, RetrievalService
+from apps.knowledge.services.vector_backends.zvec_backend import ZvecVectorRetrievalBackend
+from apps.knowledge.services.zvec_index_service import ZvecIndexUnavailable, ZvecSearchHit
 from apps.providers.models import ProviderProfile
 
 
@@ -128,6 +130,80 @@ class KnowledgeApiTests(APITestCase):
         self.assertEqual(first, [1.0, 0.0])
         self.assertEqual(second, [1.0, 0.0])
         mock_embed_texts.assert_called_once_with(["Do you provide emergency repair?"])
+
+    @override_settings(RAG_MIN_SIMILARITY=0.0, RAG_VECTOR_BACKEND="zvec")
+    @patch("apps.knowledge.services.zvec_index_service.ZvecKnowledgeIndexService.search_provider")
+    @patch("apps.knowledge.clients.openai_embedding_client.OpenAIEmbeddingClient.embed_texts")
+    def test_retrieval_falls_back_to_postgres_when_zvec_is_unavailable(self, mock_embed_texts, mock_search_provider):
+        mock_embed_texts.return_value = [[1.0, 0.0]]
+        mock_search_provider.side_effect = ZvecIndexUnavailable("zvec is not installed")
+        public_chunk = self._create_chunk(
+            title="Public fallback FAQ",
+            visibility=KnowledgeSource.VISIBILITY_PUBLIC,
+            text="Emergency repair is available for residential customers.",
+            embedding=[1.0, 0.0],
+        )
+
+        results = RetrievalService.retrieve(
+            actor=self.customer_user,
+            provider_id=self.provider.id,
+            question="Do you provide emergency repair?",
+        )
+
+        self.assertEqual([item.chunk.id for item in results], [public_chunk.id])
+        mock_search_provider.assert_called_once()
+
+    @patch("apps.knowledge.services.zvec_index_service.ZvecKnowledgeIndexService.search_provider")
+    def test_zvec_backend_refetches_only_authorized_postgres_chunks(self, mock_search_provider):
+        public_chunk = self._create_chunk(
+            title="Public zvec FAQ",
+            visibility=KnowledgeSource.VISIBILITY_PUBLIC,
+            text="Emergency repair is available for residential customers.",
+            embedding=[1.0, 0.0],
+        )
+        private_chunk = self._create_chunk(
+            title="Private zvec FAQ",
+            visibility=KnowledgeSource.VISIBILITY_PROVIDER_PRIVATE,
+            text="Private provider operations note.",
+            embedding=[1.0, 0.0],
+        )
+        mock_search_provider.return_value = [
+            ZvecSearchHit(chunk_id=private_chunk.id, score=0.99),
+            ZvecSearchHit(chunk_id=public_chunk.id, score=0.98),
+        ]
+
+        candidates = ZvecVectorRetrievalBackend.search(
+            provider=self.provider,
+            allowed_visibilities=[KnowledgeSource.VISIBILITY_PUBLIC],
+            query_embedding=[1.0, 0.0],
+            normalized_question="Do you provide emergency repair?",
+            service_id=None,
+            candidate_limit=10,
+        )
+
+        self.assertEqual([candidate.chunk.id for candidate in candidates], [public_chunk.id])
+
+    @override_settings(RAG_VECTOR_BACKEND="zvec")
+    @patch("apps.knowledge.services.ingestion_service.ZvecKnowledgeIndexService.sync_source")
+    @patch("apps.knowledge.clients.openai_embedding_client.OpenAIEmbeddingClient.embed_texts")
+    def test_ingestion_schedules_zvec_sync_after_successful_commit(self, mock_embed_texts, mock_sync_source):
+        mock_embed_texts.return_value = [[1.0, 0.0, 0.0]]
+        self.client.force_authenticate(self.provider_user)
+        self.client.post(
+            reverse("knowledge-sources"),
+            {
+                "title": "Electrical Zvec FAQ",
+                "visibility": KnowledgeSource.VISIBILITY_PUBLIC,
+                "file": SimpleUploadedFile("zvec-faq.txt", b"Emergency electrical repair is available.", content_type="text/plain"),
+            },
+            format="multipart",
+        )
+        job = KnowledgeIngestionJob.objects.get()
+
+        with self.captureOnCommitCallbacks(execute=True):
+            KnowledgeIngestionService.process_job(job)
+
+        mock_sync_source.assert_called_once()
 
     def _create_chunk(self, *, title: str, visibility: str, text: str, embedding: list[float]):
         source = KnowledgeSource.objects.create(

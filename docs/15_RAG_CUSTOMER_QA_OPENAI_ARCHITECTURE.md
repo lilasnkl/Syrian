@@ -130,6 +130,10 @@ OPENAI_CUSTOMER_QA_VERBOSITY=medium
 RAG_TOP_K=8
 RAG_MAX_CONTEXT_TOKENS=6000
 RAG_MIN_SIMILARITY=0.72
+RAG_VECTOR_BACKEND=postgres_json
+RAG_VECTOR_CANDIDATE_LIMIT=0
+RAG_VECTOR_CANDIDATE_MULTIPLIER=8
+RAG_ZVEC_PATH=
 ```
 
 Recommended defaults:
@@ -407,8 +411,22 @@ Responsibilities:
 
 - Embed the customer query.
 - Apply provider, service, order, visibility, and customer authorization filters.
+- Select the configured vector retrieval backend.
 - Run vector search and optional full-text search.
 - Merge, rank, and return candidate chunks.
+
+### Optional Zvec Retrieval Backend
+Zvec is supported as an optional derived vector index behind `RAG_VECTOR_BACKEND=zvec`.
+
+Production rule:
+
+- Postgres remains the canonical source of truth for knowledge chunks, visibility, source status, and permissions.
+- Zvec stores provider-scoped vector collections for fast candidate retrieval only.
+- The final retrieval path always refetches candidate chunk IDs from Postgres before scoring and prompting.
+- If Zvec is unavailable, stale, empty, or not installed, retrieval falls back to `postgres_json`.
+- Rebuild with `python manage.py rebuild_zvec_index` after fresh deployments, storage moves, or suspected index drift.
+
+Use Zvec when chunk volume or retrieval latency justifies an indexed vector path. It helps database CPU, latency, and future managed-vector-database infrastructure cost. It does not eliminate OpenAI embedding or LLM calls.
 
 Must not:
 
@@ -890,6 +908,10 @@ OPENAI_EMBEDDING_BATCH_SIZE
 RAG_TOP_K
 RAG_MAX_CONTEXT_TOKENS
 RAG_MIN_SIMILARITY
+RAG_VECTOR_BACKEND
+RAG_VECTOR_CANDIDATE_LIMIT
+RAG_VECTOR_CANDIDATE_MULTIPLIER
+RAG_ZVEC_PATH
 RAG_EMBEDDING_CACHE_TTL_SECONDS
 RAG_ANSWER_CACHE_TTL_SECONDS
 RAG_MAX_UPLOAD_MB
@@ -929,6 +951,7 @@ Implemented controls:
 - Evidence budget: enforce `RAG_MAX_CONTEXT_TOKENS` before building the LLM prompt.
 - Output cap: enforce `OPENAI_CUSTOMER_QA_MAX_OUTPUT_TOKENS` for customer answers.
 - Retrieval cap: keep `RAG_TOP_K` small and evidence-grounded.
+- Optional Zvec retrieval backend: use indexed provider-scoped vector search to reduce Python/database scan cost at high chunk volume while preserving Postgres permission checks.
 - File controls: limit upload size and MIME types.
 
 Important limits:
