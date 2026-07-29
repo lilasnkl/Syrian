@@ -27,8 +27,6 @@ class AssistantTurn(models.Model):
     prompt_version = models.CharField(max_length=40, default="customer-rag-v1")
     input_tokens = models.PositiveIntegerField(default=0)
     output_tokens = models.PositiveIntegerField(default=0)
-    cached_input_tokens = models.PositiveIntegerField(default=0)
-    answer_cache_hit = models.BooleanField(default=False)
     latency_ms = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -42,3 +40,4 @@ class AssistantTurn(models.Model):
 
     def __str__(self):
         return f"AssistantTurn<{self.id}:{self.answer_status}>"
+

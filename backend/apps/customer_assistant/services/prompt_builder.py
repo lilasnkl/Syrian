@@ -2,11 +2,7 @@ import json
 
 
 class CustomerRagPromptBuilder:
-    PROMPT_VERSION = "customer-rag-v2"
-
-    @classmethod
-    def prompt_cache_key(cls, *, provider) -> str:
-        return f"{cls.PROMPT_VERSION}:provider:{provider.id}"
+    PROMPT_VERSION = "customer-rag-v1"
 
     @staticmethod
     def build_system_prompt() -> str:
@@ -29,6 +25,7 @@ class CustomerRagPromptBuilder:
                     "chunk_id": chunk.id,
                     "source_id": chunk.source_id,
                     "source_title": chunk.source.title,
+                    "score": round(item.score, 4),
                     "page_number": chunk.page_number,
                     "row_number": chunk.row_number,
                     "text": chunk.chunk_text,
@@ -36,14 +33,7 @@ class CustomerRagPromptBuilder:
             )
 
         payload = {
-            "prompt_version": cls.PROMPT_VERSION,
-            "instructions": [
-                "Use only authorized_provider_evidence.",
-                "Return JSON matching the schema.",
-                "Use answered only when at least one evidence item directly supports the answer.",
-                "Use insufficient_evidence when the evidence is missing, indirect, stale, or ambiguous.",
-                "Keep the answer concise and customer friendly.",
-            ],
+            "customer_question": question,
             "provider": {
                 "id": provider.id,
                 "display_name": provider.display_name,
@@ -51,9 +41,15 @@ class CustomerRagPromptBuilder:
                 "is_verified": provider.is_verified,
             },
             "authorized_provider_evidence": evidence,
-            "customer_question": question,
+            "instructions": [
+                "Use only authorized_provider_evidence.",
+                "Return JSON matching the schema.",
+                "Use answered only when at least one evidence item directly supports the answer.",
+                "Use insufficient_evidence when the evidence is missing, indirect, stale, or ambiguous.",
+                "Keep the answer concise and customer friendly.",
+            ],
         }
-        return json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
+        return json.dumps(payload, ensure_ascii=False)
 
     @staticmethod
     def output_schema() -> dict:
@@ -84,3 +80,4 @@ class CustomerRagPromptBuilder:
             },
             "required": ["answer_status", "answer", "citations", "customer_next_step"],
         }
+
