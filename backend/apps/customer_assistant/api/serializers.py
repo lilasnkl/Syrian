@@ -49,6 +49,10 @@ class AssistantTurnSerializer(serializers.ModelSerializer):
             "model",
             "embedding_model",
             "prompt_version",
+            "input_tokens",
+            "output_tokens",
+            "cached_input_tokens",
+            "answer_cache_hit",
             "citations",
             "created_at",
         ]
@@ -61,4 +65,3 @@ class AssistantSessionSerializer(serializers.ModelSerializer):
     class Meta:
         model = AssistantSession
         fields = ["id", "provider_id", "provider_name", "order", "service", "status", "created_at", "updated_at"]
-

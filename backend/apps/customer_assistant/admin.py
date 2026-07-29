@@ -12,8 +12,21 @@ class AssistantSessionAdmin(admin.ModelAdmin):
 
 @admin.register(AssistantTurn)
 class AssistantTurnAdmin(admin.ModelAdmin):
-    list_display = ("id", "session", "customer", "provider", "answer_status", "model", "created_at")
-    list_filter = ("answer_status", "model")
+    list_display = (
+        "id",
+        "session",
+        "customer",
+        "provider",
+        "answer_status",
+        "model",
+        "input_tokens",
+        "cached_input_tokens",
+        "output_tokens",
+        "answer_cache_hit",
+        "latency_ms",
+        "created_at",
+    )
+    list_filter = ("answer_status", "model", "answer_cache_hit")
     search_fields = ("question", "answer", "customer__email", "provider__display_name")
 
 
@@ -21,4 +34,3 @@ class AssistantTurnAdmin(admin.ModelAdmin):
 class AssistantCitationAdmin(admin.ModelAdmin):
     list_display = ("id", "turn", "source", "chunk", "rank", "relevance_score")
     search_fields = ("quote", "source__title", "provider__display_name")
-
