@@ -98,7 +98,7 @@ const MyRequestsPage = () => {
     };
     const created = await addRequest(newReq);
     if (!created) {
-      toast.error(t('requests.post_error' as TranslationKey) || 'Could not post request.');
+      toast.error(t('requests.post_error') || 'Could not post request.');
       return;
     }
 
